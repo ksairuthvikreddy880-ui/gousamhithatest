@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhost Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #4a7c59; }
+        h2 { color: #666; font-size: 18px; margin-top: 0; }
+        button {
+            background: #4a7c59;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #3a5c49; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.ok {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔗 Nhost Connection Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Configuration Check</h2>
+        <button onclick="checkConfiguration()">Check Configuration</button>
+        <div id="config-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Nhost Client Status</h2>
+        <button onclick="checkNhostClient()">Check Nhost Client</button>
+        <div id="client-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Sign Up</h2>
+        <input type="email" id="test-email" placeholder="Email" value="test@example.com">
+        <input type="password" id="test-password" placeholder="Password" value="password123">
+        <input type="text" id="test-name" placeholder="Name" value="Test User">
+        <button onclick="testSignUp()">Test Sign Up</button>
+        <div id="signup-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Sign In</h2>
+        <input type="email" id="signin-email" placeholder="Email" value="test@example.com">
+        <input type="password" id="signin-password" placeholder="Password" value="password123">
+        <button onclick="testSignIn()">Test Sign In</button>
+        <div id="signin-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Get Current User</h2>
+        <button onclick="testGetUser()">Get Current User</button>
+        <div id="user-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Connection Details</h2>
+        <button onclick="showConnectionDetails()">Show Details</button>
+        <div id="details-result"></div>
+    </div>
+
+    <script type="module">
+        import { nhost, auth, isLoggedIn, getCurrentUser, getSession, getAccessToken, NHOST_CONFIG } from './js/nhost-client.js';
+
+        // Make functions global
+        window.nhost = nhost;
+        window.auth = auth;
+        window.isLoggedIn = isLoggedIn;
+        window.getCurrentUser = getCurrentUser;
+        window.getSession = getSession;
+        window.getAccessToken = getAccessToken;
+        window.NHOST_CONFIG = NHOST_CONFIG;
+
+        console.log('✅ Nhost client loaded');
+        console.log('Configuration:', NHOST_CONFIG);
+    </script>
+
+    <script>
+        function checkConfiguration() {
+            const resultDiv = document.getElementById('config-result');
+            
+            if (!window.NHOST_CONFIG) {
+                resultDiv.innerHTML = '<div class="status error">❌ Configuration not loaded</div>';
+                return;
+            }
+
+            const config = window.NHOST_CONFIG;
+            let html = '<div class="status ok">✅ Configuration loaded</div>';
+            html += '<pre>';
+            html += `Subdomain: ${config.subdomain}\n`;
+            html += `Region: ${config.region}\n`;
+            html += `GraphQL: ${config.graphqlEndpoint}\n`;
+            html += `Backend: ${config.backendUrl}\n`;
+            html += '</pre>';
+            
+            resultDiv.innerHTML = html;
+        }
+
+        function checkNhostClient() {
+            const resultDiv = document.getElementById('client-result');
+            
+            if (!window.nhost) {
+                resultDiv.innerHTML = '<div class="status error">❌ Nhost client not loaded</div>';
+                return;
+            }
+
+            let html = '<div class="status ok">✅ Nhost client loaded</div>';
+            html += '<pre>';
+            html += `Auth available: ${!!window.auth}\n`;
+            html += `isLoggedIn function: ${typeof window.isLoggedIn}\n`;
+            html += `getCurrentUser function: ${typeof window.getCurrentUser}\n`;
+            html += `getSession function: ${typeof window.getSession}\n`;
+            html += `getAccessToken function: ${typeof window.getAccessToken}\n`;
+            html += '</pre>';
+            
+            resultDiv.innerHTML = html;
+        }
+
+        async function testSignUp() {
+            const resultDiv = document.getElementById('signup-result');
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            const name = document.getElementById('test-name').value;
+
+            if (!email || !password || !name) {
+                resultDiv.innerHTML = '<div class="status error">❌ Please fill all fields</div>';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '<div class="status info">⏳ Testing sign up...</div>';
+                
+                const { session, error } = await window.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        displayName: name,
+                        metadata: { phone: '9876543210' }
+                    }
+                });
+
+                if (error) {
+                    resultDiv.innerHTML = `<div class="status error">❌ Sign up failed: ${error.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="status ok">✅ Sign up successful</div>`;
+                    resultDiv.innerHTML += '<pre>' + JSON.stringify({ session, user: session?.user }, null, 2) + '</pre>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testSignIn() {
+            const resultDiv = document.getElementById('signin-result');
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+
+            if (!email || !password) {
+                resultDiv.innerHTML = '<div class="status error">❌ Please fill all fields</div>';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '<div class="status info">⏳ Testing sign in...</div>';
+                
+                const { session, error } = await window.auth.signIn({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    resultDiv.innerHTML = `<div class="status error">❌ Sign in failed: ${error.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="status ok">✅ Sign in successful</div>`;
+                    resultDiv.innerHTML += '<pre>' + JSON.stringify({ session, user: session?.user }, null, 2) + '</pre>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function testGetUser() {
+            const resultDiv = document.getElementById('user-result');
+            
+            try {
+                const user = window.getCurrentUser();
+                
+                if (!user) {
+                    resultDiv.innerHTML = '<div class="status error">❌ No user logged in</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="status ok">✅ User found</div>';
+                    resultDiv.innerHTML += '<pre>' + JSON.stringify(user, null, 2) + '</pre>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function showConnectionDetails() {
+            const resultDiv = document.getElementById('details-result');
+            
+            if (!window.NHOST_CONFIG) {
+                resultDiv.innerHTML = '<div class="status error">❌ Configuration not available</div>';
+                return;
+            }
+
+            const config = window.NHOST_CONFIG;
+            let html = '<div class="status ok">✅ Connection Details</div>';
+            html += '<pre>';
+            html += `Subdomain: ${config.subdomain}\n`;
+            html += `Region: ${config.region}\n`;
+            html += `GraphQL Endpoint: ${config.graphqlEndpoint}\n`;
+            html += `Backend URL: ${config.backendUrl}\n`;
+            html += `\nStatus:\n`;
+            html += `Logged In: ${window.isLoggedIn()}\n`;
+            html += `Session: ${window.getSession() ? 'Active' : 'None'}\n`;
+            html += `Access Token: ${window.getAccessToken() ? 'Available' : 'None'}\n`;
+            html += '</pre>';
+            
+            resultDiv.innerHTML = html;
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            console.log('✅ Test page loaded');
+            checkConfiguration();
+            checkNhostClient();
+        });
+    </script>
+</body>
+</html>
