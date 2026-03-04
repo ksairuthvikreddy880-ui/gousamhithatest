@@ -100,6 +100,7 @@ async function handleGoogleCallback() {
 async function exchangeCodeForUserInfo(code) {
     const response = await fetch(`${API_BASE_URL}/auth/google`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -118,6 +119,7 @@ async function handleGoogleSignInComplete(userInfo) {
     console.log('Completing Google Sign In for:', userInfo.email);
     const response = await fetch(`${API_BASE_URL}/auth/google/signin`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -130,9 +132,10 @@ async function handleGoogleSignInComplete(userInfo) {
     });
     const data = await response.json();
     if (data.success) {
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-        localStorage.setItem('userRole', data.user.role);
+        // Update auth manager instead of localStorage
+        if (window.authManager) {
+            window.authManager.user = data.user;
+        }
         showMessage('Signed in successfully with Google!', 'success');
         setTimeout(() => {
             if (data.user.role === 'admin') {
@@ -152,6 +155,7 @@ async function handleGoogleSignUpComplete(userInfo) {
     console.log('Completing Google Sign Up for:', userInfo.email);
     const response = await fetch(`${API_BASE_URL}/auth/google/signup`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -164,9 +168,10 @@ async function handleGoogleSignUpComplete(userInfo) {
     });
     const data = await response.json();
     if (data.success) {
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-        localStorage.setItem('userRole', 'customer');
+        // Update auth manager instead of localStorage
+        if (window.authManager) {
+            window.authManager.user = data.user;
+        }
         showMessage('Account created successfully with Google!', 'success');
         setTimeout(() => {
             window.location.href = '/index.html';

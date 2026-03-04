@@ -60,6 +60,7 @@ async function handleSignUp(event) {
         
         const response = await fetch(`${API_URL}/auth/signup`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json'
             },
