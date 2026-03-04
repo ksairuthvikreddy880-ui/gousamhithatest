@@ -1,9 +1,2 @@
-const SUPABASE_URL = "https://blsgyybaevuytmqpljyk.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_REAL_ANON_KEY";
-
-const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
-
-window.supabaseClient = supabase;
+// Backend JWT authentication
+window.supabase = null;

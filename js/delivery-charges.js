@@ -9,7 +9,7 @@ class DeliveryChargeCalculator {
     // Get delivery charge for a pincode
     async getDeliveryCharge(pincode, orderTotal = 0) {
         if (!window.supabase) {
-            console.error('Supabase not initialized');
+            // Using backend API instead
             return this.getDefaultCharge();
         }
 

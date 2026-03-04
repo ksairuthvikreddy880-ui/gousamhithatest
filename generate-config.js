@@ -28,14 +28,10 @@ function loadEnv() {
 function generateConfig() {
     const env = loadEnv();
     
-    const configContent = `const SUPABASE_CONFIG = {
-    url: '${env.SUPABASE_URL || ''}',
-    anonKey: '${env.SUPABASE_ANON_KEY || ''}'
-};
-
+    const configContent = `// Backend API Configuration
 const APP_CONFIG = {
+    API_URL: '${env.API_BASE_URL || 'http://localhost:5000'}/api',
     adminEmail: '${env.ADMIN_EMAIL || ''}',
-    apiBaseUrl: '${env.API_BASE_URL || 'http://localhost:5000'}',
     appName: '${env.APP_NAME || 'Gousamhitha'}',
     appDescription: '${env.APP_DESCRIPTION || 'Organic Products E-commerce Platform'}'
 };
@@ -43,13 +39,16 @@ const APP_CONFIG = {
 const RAZORPAY_CONFIG = {
     keyId: '${env.RAZORPAY_KEY_ID || ''}'
 };
+
+// Deprecated - kept for backward compatibility
+const SUPABASE_CONFIG = { url: '', anonKey: '' };
 `;
     
     const configPath = path.join(__dirname, 'config.js');
     fs.writeFileSync(configPath, configContent, 'utf8');
     
     console.log('✓ config.js generated successfully from .env');
-    console.log('✓ Supabase URL:', env.SUPABASE_URL ? '***configured***' : 'MISSING');
+    console.log('✓ API URL:', env.API_URL || 'http://localhost:5000/api');
     console.log('✓ Admin Email:', env.ADMIN_EMAIL || 'MISSING');
     console.log('✓ Razorpay Key:', env.RAZORPAY_KEY_ID ? '***configured***' : 'MISSING');
 }

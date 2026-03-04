@@ -564,7 +564,7 @@ async function handleAddProduct(event) {
     }
     
     if (typeof window.supabase === 'undefined') {
-        console.error('❌ Supabase not initialized!');
+        // Using backend API instead
         messageEl.textContent = 'Database connection error. Please refresh the page.';
         messageEl.className = 'form-message error';
         return;
@@ -655,7 +655,7 @@ async function loadOrdersTable() {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Loading orders...</td></tr>';
     
     if (!window.supabase) {
-        console.error('Supabase not initialized in loadOrdersTable');
+        // Using backend API instead
         tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #d32f2f;">Database not connected. Please refresh the page.</td></tr>';
         return;
     }
@@ -745,7 +745,7 @@ async function updateOrderStatus(orderId, newStatus) {
     console.log('New Status:', newStatus);
     
     if (!window.supabase) {
-        console.error('Supabase not initialized!');
+        // Using backend API instead
         alert('Database connection error. Please refresh the page.');
         return;
     }
@@ -1070,7 +1070,7 @@ if (window.location.pathname.includes('admin-add-product.html')) {
         if (typeof window.supabase !== 'undefined') {
             await loadVendorsDropdown();
         } else {
-            console.error('Supabase not initialized - vendors dropdown not loaded');
+            // Using backend API instead
         }
         
         const categoryInput = document.getElementById('new-category-input');

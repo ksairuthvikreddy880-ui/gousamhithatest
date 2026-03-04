@@ -1,0 +1,33 @@
+NEON POSTGRESQL SETUP
+=====================
+
+STEP 1: Get Your Neon Connection String
+----------------------------------------
+1. Go to Neon Console: https://console.neon.tech/
+2. Select your project
+3. Click "Connection Details"
+4. Copy the connection string (it includes ?sslmode=require)
+
+STEP 2: Update .env File
+-------------------------
+Open: backend/.env
+Replace: DATABASE_URL=your_neon_connection_string_here
+With your actual Neon connection string
+
+STEP 3: Run SQL Schema in Neon
+-------------------------------
+1. In Neon Console, go to SQL Editor
+2. Open file: NEON-DATABASE-SCHEMA.sql
+3. Copy all SQL code
+4. Paste and execute in Neon SQL Editor
+
+STEP 4: Start Backend
+----------------------
+cd backend
+npm start
+
+Expected output:
+✅ Connected to Neon PostgreSQL
+🚀 Server running on port 5000
+
+DONE! Your backend is now connected to Neon PostgreSQL.

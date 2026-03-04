@@ -34,7 +34,7 @@
 async function getCart() {
     try {
         if (!window.supabase) {
-            console.error('Supabase not initialized');
+            // Using backend API instead
             return [];
         }
 

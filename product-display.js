@@ -6,21 +6,19 @@ async function loadProductsWithVendors() {
     if (!targetGrid) return;
     targetGrid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Loading products...</div>';
     
-    if (typeof window.supabase === 'undefined') {
-        targetGrid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #d32f2f;">Database connection error. Please refresh the page.</div>';
-        return;
-    }
+    // Use backend API instead of Supabase
+    const API_URL = 'http://localhost:5000/api';
     
     try {
-        const { data: products, error } = await window.supabase
-            .from('products')
-            .select('*')
-            .order('created_at', { ascending: false });
-        if (error) {
-            console.error('Error fetching products:', error);
-            targetGrid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #d32f2f;">Error loading products. Please try again.</div>';
-            return;
+        // Fetch products from backend API
+        const response = await fetch(`${API_URL}/products`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch products');
         }
+        
+        const result = await response.json();
+        const products = result.products || [];
+        
         if (!products || products.length === 0) {
             const message = homeProductGrid ? 
                 'No products available yet. Check back soon!' : 
@@ -33,6 +31,7 @@ async function loadProductsWithVendors() {
             `;
             return;
         }
+        
         let filteredProducts = products;
         if (productGrid && !homeProductGrid) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -50,10 +49,14 @@ async function loadProductsWithVendors() {
                 }
             }
         }
+        
         const displayProducts = homeProductGrid ? products.slice(0, 4) : filteredProducts;
-        const { data: vendors } = await window.supabase
-            .from('vendors')
-            .select('*');
+        
+        // Fetch vendors from backend API
+        const vendorsResponse = await fetch(`${API_URL}/vendors`);
+        const vendorsResult = await vendorsResponse.json();
+        const vendors = vendorsResult.vendors || [];
+        
         targetGrid.innerHTML = displayProducts.map(product => {
             let vendorInfo = { vendorName: 'Gousamhitha', businessName: 'Gousamhitha Farm' };
             if (product.vendor_id && vendors) {
@@ -103,7 +106,14 @@ async function loadProductsWithVendors() {
         }).join('');
     } catch (error) {
         console.error('Error loading products:', error);
-        targetGrid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #d32f2f;">Error loading products. Please try again.</div>';
+        targetGrid.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #d32f2f; grid-column: 1/-1;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Cannot connect to server</div>
+                <div style="font-size: 0.9rem; color: #666;">Please make sure the backend server is running on port 5000</div>
+                <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #4a7c59; color: white; border: none; border-radius: 5px; cursor: pointer;">Retry</button>
+            </div>
+        `;
     }
 }
 

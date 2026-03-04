@@ -1,42 +1,68 @@
 ﻿const jwt = require('jsonwebtoken');
 
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+const verifyToken = (req, res, next) => {
+    try {
+        // Try to get token from cookies first (HTTP-only)
+        let token = req.cookies.auth_token;
 
-    if (!token) {
-        return res.status(401).json({ error: 'Access token required' });
+        // If not in cookies, try Authorization header (for API clients)
+        if (!token) {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                token = authHeader.substring(7); // Remove 'Bearer ' prefix
+            }
+        }
+
+        if (!token) {
+            return res.status(401).json({ 
+                success: false,
+                error: 'No token provided' 
+            });
+        }
+
+        // Verify token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        // Attach user to request
+        req.user = {
+            id: decoded.id,
+            email: decoded.email,
+            role: decoded.role
+        };
+
+        next();
+    } catch (error) {
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ 
+                success: false,
+                error: 'Invalid token' 
+            });
+        }
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ 
+                success: false,
+                error: 'Token expired' 
+            });
+        }
+        return res.status(500).json({ 
+            success: false,
+            error: 'Authentication failed' 
+        });
     }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ error: 'Invalid or expired token' });
-        }
-        req.user = user;
-        next();
-    });
 };
 
-const requireRole = (role) => {
-    return (req, res, next) => {
-        if (req.user.role !== role) {
-            return res.status(403).json({ error: 'Insufficient permissions' });
-        }
-        next();
-    };
-};
-
-const requireRoles = (roles) => {
-    return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
-            return res.status(403).json({ error: 'Insufficient permissions' });
-        }
-        next();
-    };
+// Middleware to check if user is admin
+const verifyAdmin = (req, res, next) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ 
+            success: false,
+            error: 'Access denied. Admin only.' 
+        });
+    }
+    next();
 };
 
 module.exports = {
-    authenticateToken,
-    requireRole,
-    requireRoles
+    verifyToken,
+    verifyAdmin
 };
