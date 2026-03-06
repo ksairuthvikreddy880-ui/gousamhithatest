@@ -7,9 +7,8 @@
     <link rel="stylesheet" href="admin-styles.css">
     <link rel="stylesheet" href="css/responsive.css">
     
-    <!-- Supabase configuration - MUST load in this exact order -->
-    <script src="./config.js?v=20260301-2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase Client -->
+    <script src="js/supabase-client.js?v=6"></script>
 </head>
 <body class="admin-page">
     <div class="admin-layout">
@@ -153,10 +152,75 @@
         </main>
     </div>
     
-    <!-- Scripts already loaded in head: js/config.js and Supabase CDN -->
-    <script src="supabase-auth.js"></script>
-    <script src="admin-script.js"></script>
+    <!-- Scripts -->
     <script>
+        let categories = [];
+        window.imageBase64 = '';
+
+        // Wait for Supabase to be ready
+        window.addEventListener('supabaseReady', async () => {
+            console.log('✅ Supabase ready, loading vendors and categories...');
+            await loadVendors();
+            await loadCategories();
+        });
+        
+        // Also try after a delay
+        setTimeout(async () => {
+            if (window.supabase) {
+                await loadVendors();
+                await loadCategories();
+            }
+        }, 1000);
+
+        async function loadVendors() {
+            const vendorSelect = document.getElementById('product-vendor');
+            if (!vendorSelect) return;
+            
+            try {
+                const { data: vendors, error } = await window.supabase
+                    .from('vendors')
+                    .select('id, vendor_name, business_name')
+                    .eq('status', 'active')
+                    .order('vendor_name');
+                
+                if (error) {
+                    console.error('Error loading vendors:', error);
+                    return;
+                }
+                
+                vendorSelect.innerHTML = '<option value="">Select Vendor</option>' +
+                    (vendors || []).map(v => `<option value="${v.id}">${v.vendor_name} - ${v.business_name}</option>`).join('');
+                
+                console.log('✅ Loaded', vendors.length, 'vendors');
+            } catch (error) {
+                console.error('Error loading vendors:', error);
+            }
+        }
+
+        async function loadCategories() {
+            // For now, categories are hardcoded in the HTML
+            // You can extend this to load from database if needed
+            console.log('✅ Categories loaded from dropdown');
+        }
+
+        function toggleCategoryManagement() {
+            const panel = document.getElementById('category-management-panel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                window.imageBase64 = e.target.result;
+                const preview = document.getElementById('image-preview');
+                preview.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 300px; border-radius: 8px; margin-top: 10px;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
         // Handle Add Product form submission
         window.handleAddProduct = async function(event) {
             event.preventDefault();
@@ -174,7 +238,7 @@
             const vendorId = vendorSelect ? vendorSelect.value : '';
             const messageEl = document.getElementById('form-message');
             
-            console.log('Form values:', { name, category, price, stock, vendorId, vendorSelectExists: !!vendorSelect });
+            console.log('Form values:', { name, category, price, stock, vendorId });
             
             if (!name || !category || !price || !stock || !unit || !unitQuantity) {
                 messageEl.textContent = 'Please fill in all required fields';
@@ -243,6 +307,23 @@
                 messageEl.className = 'form-message error';
             }
         };
+
+        async function adminLogout() {
+            const confirmLogout = confirm('Are you sure you want to logout?');
+            if (confirmLogout) {
+                try {
+                    const { error } = await window.supabase.auth.signOut();
+                    if (error) throw error;
+                    
+                    localStorage.clear();
+                    
+                    window.location.replace('./index.html');
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('Failed to logout. Please try again.');
+                }
+            }
+        }
     </script>
     <script src="js/toast.js"></script>
 </body>

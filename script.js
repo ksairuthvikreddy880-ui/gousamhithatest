@@ -170,32 +170,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-function openAuthModal() {
-    document.getElementById('auth-modal').classList.add('active');
-}
-function closeAuthModal() {
-    document.getElementById('auth-modal').classList.remove('active');
-}
-function toggleHamburgerMenu(event) {
-    if (event) event.preventDefault();
-    const dropdown = document.getElementById('hamburger-dropdown');
-    const hamburgerBtn = document.getElementById('hamburger-btn');
-    dropdown.classList.toggle('active');
-    hamburgerBtn.classList.toggle('active');
-}
-function switchTab(tab) {
-    const tabs = document.querySelectorAll('.auth-tab');
-    const forms = document.querySelectorAll('.auth-form-container');
-    tabs.forEach(t => t.classList.remove('active'));
-    forms.forEach(f => f.classList.remove('active'));
-    if (tab === 'signin') {
-        tabs[0].classList.add('active');
-        document.getElementById('signin-form').classList.add('active');
-    } else {
-        tabs[1].classList.add('active');
-        document.getElementById('signup-form').classList.add('active');
-    }
-}
+// Auth modal functions removed - now handled by nhost-auth-handler.js
+// switchTab function removed - now handled by profile-handler.js
 
 function toggleProfileDropdown(event) {
     event.preventDefault();

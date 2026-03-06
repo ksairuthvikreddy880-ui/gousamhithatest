@@ -211,9 +211,8 @@
             color: #999;
         }
     </style>
-    <!-- Supabase configuration - MUST load in this exact order -->
-    <script src="./config.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase Client -->
+    <script src="js/supabase-client.js?v=6"></script>
 </head>
 <body class="admin-page">
     <div class="admin-layout">
@@ -294,12 +293,23 @@
         </div>
     </div>
     
-    <!-- Scripts already loaded in head: js/config.js and Supabase CDN -->
-    <script src="supabase-auth.js"></script>
-    <script src="admin-script.js"></script>
+    <!-- Scripts -->
     <script src="js/toast.js"></script>
     <script>
         let currentZoneId = null;
+
+        // Wait for Supabase to be ready
+        window.addEventListener('supabaseReady', async () => {
+            console.log('✅ Supabase ready, loading delivery zones...');
+            await loadDeliveryZones();
+        });
+        
+        // Also try after a delay
+        setTimeout(async () => {
+            if (window.supabase) {
+                await loadDeliveryZones();
+            }
+        }, 1000);
         
         async function loadDeliveryZones() {
             const container = document.getElementById('zones-container');
@@ -531,20 +541,22 @@
             }
         }
         
-        document.addEventListener('DOMContentLoaded', async function() {
-            let retries = 0;
-            while (typeof window.supabase === 'undefined' && retries < 20) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                retries++;
+        async function adminLogout() {
+            const confirmLogout = confirm('Are you sure you want to logout?');
+            if (confirmLogout) {
+                try {
+                    const { error } = await window.supabase.auth.signOut();
+                    if (error) throw error;
+                    
+                    localStorage.clear();
+                    
+                    window.location.replace('./index.html');
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('Failed to logout. Please try again.');
+                }
             }
-            
-            if (typeof window.supabase === 'undefined') {
-                console.error('Supabase failed to initialize');
-                return;
-            }
-            
-            await loadDeliveryZones();
-        });
+        }
     </script>
 </body>
 </html>

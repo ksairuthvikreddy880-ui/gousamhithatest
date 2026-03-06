@@ -9,9 +9,8 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="css/responsive.css">
     
-    <!-- Supabase Initialization v4 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./supabase-init.js?v=4"></script>
+    <!-- Supabase Scripts -->
+    <script src="js/supabase-client.js?v=2"></script>
 </head>
 <body>
     
@@ -96,11 +95,11 @@
                 <form onsubmit="handleSignIn(event)" id="main-signin-form">
                     <div class="form-group">
                         <label>Email or Mobile</label>
-                        <input type="text" id="signin-email" required placeholder="Enter email or mobile" onkeyup="checkUserRole()">
+                        <input type="text" id="signin-email" required placeholder="Enter email or mobile">
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" id="signin-password" required placeholder="Enter password" onkeyup="checkUserRole()">
+                        <input type="password" id="signin-password" required placeholder="Enter password">
                     </div>
                     <div class="auth-message" id="signin-message"></div>
                     
@@ -308,15 +307,11 @@
         </div>
     </div>
 
-    <!-- Scripts: config.js already loaded in <head> -->
-    <script src="supabase-auth.js"></script>
-    <script src="data-manager.js"></script>
-    <script src="order-management.js"></script>
-    <script src="product-display.js"></script>
-    <script src="script.js"></script>
+    <!-- Scripts -->
+    <script src="js/profile-handler.js?v=8"></script>
+    <script src="js/supabase-auth.js?v=2"></script>
+    <script src="product-display.js?v=4"></script>
     <script src="js/toast.js"></script>
-    <script src="js/add-mobile-menu.js"></script>
-    <script src="js/mobile-menu.js"></script>
-    <script src="js/lazy-load.js"></script>
+    <script src="js/mobile-menu.js?v=2"></script>
 </body>
 </html>

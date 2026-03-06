@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Products Query</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #4a7c59;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .error { color: #d32f2f; }
+        .success { color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Products GraphQL Query</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Check Nhost Connection</h2>
+        <button onclick="testNhost()">Test Nhost</button>
+        <div id="nhost-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Query Products</h2>
+        <button onclick="testProducts()">Query Products</button>
+        <div id="products-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Direct GraphQL Fetch</h2>
+        <button onclick="testDirectFetch()">Direct Fetch</button>
+        <div id="fetch-result"></div>
+    </div>
+
+    <script src="js/nhost-client-cdn.js"></script>
+    <script>
+        async function testNhost() {
+            const resultDiv = document.getElementById('nhost-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            if (window.nhost) {
+                resultDiv.innerHTML = `
+                    <pre class="success">✅ Nhost loaded
+GraphQL URL: https://mplmzjcwaxqmtyngivxf.ap-south-1.nhost.run/v1/graphql
+Auth available: ${typeof window.nhost.auth !== 'undefined'}
+GraphQL available: ${typeof window.nhost.graphql !== 'undefined'}</pre>
+                `;
+            } else {
+                resultDiv.innerHTML = '<pre class="error">❌ Nhost not loaded</pre>';
+            }
+        }
+
+        async function testProducts() {
+            const resultDiv = document.getElementById('products-result');
+            resultDiv.innerHTML = '<p>Querying products...</p>';
+            
+            try {
+                if (!window.nhost) {
+                    throw new Error('Nhost not loaded');
+                }
+                
+                const response = await window.nhost.graphql.request(`
+                    query GetProducts {
+                        products {
+                            id
+                            name
+                            price
+                        }
+                    }
+                `);
+                
+                console.log('Full response:', response);
+                
+                if (response.error) {
+                    resultDiv.innerHTML = `
+                        <pre class="error">❌ GraphQL Error:
+${JSON.stringify(response.error, null, 2)}</pre>
+                    `;
+                } else {
+                    const products = response.data?.products || [];
+                    resultDiv.innerHTML = `
+                        <pre class="success">✅ Query successful!
+Found ${products.length} products:
+${JSON.stringify(products, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <pre class="error">❌ Error:
+${error.message}
+${JSON.stringify(error, null, 2)}</pre>
+                `;
+            }
+        }
+
+        async function testDirectFetch() {
+            const resultDiv = document.getElementById('fetch-result');
+            resultDiv.innerHTML = '<p>Testing direct fetch...</p>';
+            
+            try {
+                const response = await fetch('https://mplmzjcwaxqmtyngivxf.ap-south-1.nhost.run/v1/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: `
+                            query GetProducts {
+                                products {
+                                    id
+                                    name
+                                    price
+                                }
+                            }
+                        `
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.errors) {
+                    resultDiv.innerHTML = `
+                        <pre class="error">❌ GraphQL Errors:
+${JSON.stringify(result.errors, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <pre class="success">✅ Direct fetch successful!
+${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <pre class="error">❌ Fetch error:
+${error.message}</pre>
+                `;
+            }
+        }
+
+        // Auto-test on load
+        window.addEventListener('nhostReady', function() {
+            setTimeout(() => {
+                testNhost();
+                testProducts();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

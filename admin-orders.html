@@ -241,9 +241,8 @@
             }
         }
     </style>
-    <!-- Supabase configuration - MUST load in this exact order -->
-    <script src="./config.js?v=20260301-2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase Client -->
+    <script src="js/supabase-client.js?v=6"></script>
 </head>
 <body class="admin-page">
     <div class="admin-layout">
@@ -276,11 +275,25 @@
         </main>
     </div>
     
-    <!-- Scripts already loaded in head: js/config.js and Supabase CDN -->
-    <script src="supabase-auth.js"></script>
+    <!-- Scripts -->
     <script src="admin-script.js"></script>
     <script src="js/toast.js"></script>
     <script>
+        // Wait for Supabase to be ready
+        window.addEventListener('supabaseReady', async () => {
+            console.log('✅ Supabase ready, loading orders...');
+            if (typeof loadOrdersTable === 'function') {
+                await loadOrdersTable();
+            }
+        });
+        
+        // Also try after a delay
+        setTimeout(async () => {
+            if (window.supabase && typeof loadOrdersTable === 'function') {
+                await loadOrdersTable();
+            }
+        }, 1000);
+        
         window.viewLocation = function(lat, lng) {
             window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
         };

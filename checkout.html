@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Checkout - Gousamhitha</title>    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="styles.css">    <link rel="stylesheet" href="css/responsive.css">
+    <title>Checkout - Gousamhitha</title>
+    <!-- Version: 3.0 - Fixed product_id in order_items -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
@@ -199,7 +202,8 @@
                         
                         <div class="form-group">
                             <label for="pincode">Pincode *</label>
-                            <input type="text" id="pincode" name="pincode" required>
+                            <input type="text" id="pincode" name="pincode" required maxlength="6" pattern="[0-9]{6}">
+                            <small style="color: #d32f2f; font-size: 12px; font-weight: 600;">⚠️ If using map selection, please verify the pincode is correct for your exact location</small>
                         </div>
                         
                         <div class="form-group">
@@ -207,7 +211,7 @@
                             <textarea id="notes" name="notes" rows="3"></textarea>
                         </div>
                         
-                        <button type="button" class="btn btn-primary sticky-bottom" style="width: 100%;" onclick="handleCheckoutSubmit(event)">Place Order</button>
+                        <button type="button" class="btn btn-primary sticky-bottom" style="width: 100%; background: #4a7c59 !important; color: white !important;" onclick="handleCheckoutSubmit(event)">Place Order</button>
                     </form>
                 </div>
                 
@@ -293,7 +297,6 @@
         </div>
     </div>
 
-    <script src="payment.js"></script>
     <!-- CRITICAL: Inline config to avoid loading issues -->
     <script>
         console.log('🔄 Setting up inline config...');
@@ -303,11 +306,14 @@
         };
         console.log('✅ Inline SUPABASE_CONFIG loaded');
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-auth.js"></script>
-    <script src="data-manager.js"></script>
+    <!-- Supabase Scripts -->
+    <script src="js/supabase-client.js?v=6"></script>
+    <script src="js/supabase-auth.js?v=7"></script>
+    <script src="js/profile-handler.js?v=8"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/mobile-menu.js?v=2"></script>
     <script src="js/delivery-charges.js"></script>
-    <script src="script.js"></script>
+    <script src="payment.js?v=14"></script>
     <script>
         let map;
         let marker;
@@ -319,50 +325,89 @@
 
         // Load cart and calculate delivery on page load
         async function loadCheckoutSummary() {
-            const cart = await DataManager.getCart();
             const summaryDiv = document.getElementById('checkout-summary');
             
-            if (!cart || cart.length === 0) {
-                summaryDiv.innerHTML = '<p>Your cart is empty</p>';
+            if (!window.supabase) {
+                summaryDiv.innerHTML = '<p>Loading...</p>';
                 return;
             }
             
-            cartSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            window.cartSubtotal = cartSubtotal;
-            
-            let html = '<div class="summary-items">';
-            cart.forEach(item => {
-                html += `
-                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
-                        <div>
-                            <div style="font-weight: 500;">${item.name}</div>
-                            <div style="font-size: 13px; color: #666;">Qty: ${item.quantity} × ₹${item.price}</div>
+            try {
+                // Get current user
+                const { data: { user } } = await window.supabase.auth.getUser();
+                
+                if (!user) {
+                    summaryDiv.innerHTML = '<p>Please login to checkout</p>';
+                    return;
+                }
+                
+                // Fetch cart items with product details
+                const { data: cartItems, error } = await window.supabase
+                    .from('cart')
+                    .select(`
+                        id,
+                        quantity,
+                        products (
+                            id,
+                            name,
+                            price,
+                            image_url
+                        )
+                    `)
+                    .eq('user_id', user.id);
+                
+                if (error) {
+                    console.error('Error loading cart:', error);
+                    summaryDiv.innerHTML = '<p>Error loading cart</p>';
+                    return;
+                }
+                
+                if (!cartItems || cartItems.length === 0) {
+                    summaryDiv.innerHTML = '<p>Your cart is empty</p>';
+                    return;
+                }
+                
+                cartSubtotal = cartItems.reduce((sum, item) => sum + (item.products.price * item.quantity), 0);
+                window.cartSubtotal = cartSubtotal;
+                
+                let html = '<div class="summary-items">';
+                cartItems.forEach(item => {
+                    const product = item.products;
+                    html += `
+                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                            <div>
+                                <div style="font-weight: 500;">${product.name}</div>
+                                <div style="font-size: 13px; color: #666;">Qty: ${item.quantity} × ₹${product.price}</div>
+                            </div>
+                            <div style="font-weight: 600;">₹${(product.price * item.quantity).toFixed(2)}</div>
                         </div>
-                        <div style="font-weight: 600;">₹${(item.price * item.quantity).toFixed(2)}</div>
+                    `;
+                });
+                html += '</div>';
+                
+                html += `
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee;">
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                            <span>Subtotal</span>
+                            <span id="cart-subtotal">₹${cartSubtotal.toFixed(2)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                            <span>Delivery Charge</span>
+                            <span id="delivery-charge" style="color: #4caf50; font-weight: 600;">Enter pincode</span>
+                        </div>
+                        <div id="delivery-info-box"></div>
+                        <div style="display: flex; justify-content: space-between; padding: 15px 0; border-top: 2px solid #333; margin-top: 10px; font-size: 18px; font-weight: 700;">
+                            <span>Total</span>
+                            <span id="order-total" style="color: #4a7c59;">₹${cartSubtotal.toFixed(2)}</span>
+                        </div>
                     </div>
                 `;
-            });
-            html += '</div>';
-            
-            html += `
-                <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #eee;">
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                        <span>Subtotal</span>
-                        <span id="cart-subtotal">₹${cartSubtotal.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                        <span>Delivery Charge</span>
-                        <span id="delivery-charge" style="color: #4caf50; font-weight: 600;">Enter pincode</span>
-                    </div>
-                    <div id="delivery-info-box"></div>
-                    <div style="display: flex; justify-content: space-between; padding: 15px 0; border-top: 2px solid #333; margin-top: 10px; font-size: 18px; font-weight: 700;">
-                        <span>Total</span>
-                        <span id="order-total" style="color: #4a7c59;">₹${cartSubtotal.toFixed(2)}</span>
-                    </div>
-                </div>
-            `;
-            
-            summaryDiv.innerHTML = html;
+                
+                summaryDiv.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading checkout summary:', error);
+                summaryDiv.innerHTML = '<p>Error loading cart</p>';
+            }
         }
         
         // Update delivery charge when pincode changes
@@ -381,8 +426,19 @@
         }
         
         // Add event listener to pincode field
-        document.addEventListener('DOMContentLoaded', async function() {
+        // Wait for Supabase to be ready
+        window.addEventListener('supabaseReady', async () => {
+            console.log('✅ Supabase ready, loading checkout...');
             await loadCheckoutSummary();
+        });
+        
+        setTimeout(async () => {
+            if (window.supabase) {
+                await loadCheckoutSummary();
+            }
+        }, 1000);
+        
+        document.addEventListener('DOMContentLoaded', async function() {
             
             const pincodeInput = document.getElementById('pincode');
             if (pincodeInput) {
@@ -403,10 +459,31 @@
             
             console.log('=== CHECKOUT SUBMIT STARTED ===');
             
-            cart = await DataManager.getCart();
-            console.log('Cart loaded:', cart);
+            // Get current user
+            const { data: { user } } = await window.supabase.auth.getUser();
             
-            if (cart.length === 0) {
+            if (!user) {
+                alert('Please login to place an order');
+                return false;
+            }
+            
+            // Fetch cart items
+            const { data: cartItems, error: cartError } = await window.supabase
+                .from('cart')
+                .select(`
+                    id,
+                    quantity,
+                    products (
+                        id,
+                        name,
+                        price
+                    )
+                `)
+                .eq('user_id', user.id);
+            
+            console.log('Cart loaded:', cartItems);
+            
+            if (!cartItems || cartItems.length === 0) {
                 alert('Your cart is empty!');
                 window.location.href = 'shop.html';
                 return false;
@@ -427,11 +504,16 @@
             
             console.log('Form values:', { name, phone, email, address, city, pincode });
             
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const subtotal = cartItems.reduce((sum, item) => sum + (item.products.price * item.quantity), 0);
             const total = subtotal + currentDeliveryCharge;
             
             const orderData = {
-                items: cart,
+                items: cartItems.map(item => ({
+                    product_id: item.products.id,
+                    name: item.products.name,
+                    price: item.products.price,
+                    quantity: item.quantity
+                })),
                 total: total,
                 subtotal: subtotal,
                 delivery_charge: currentDeliveryCharge,
@@ -474,11 +556,11 @@
                 }
                 
                 for (const item of orderData.items) {
-                    if (item.id) {
+                    if (item.product_id) {
                         const { data: product, error: productError } = await window.supabase
                             .from('products')
                             .select('stock, name')
-                            .eq('id', item.id)
+                            .eq('id', item.product_id)
                             .single();
                         
                         if (productError || !product) {
@@ -545,7 +627,7 @@
 
                 const orderItems = orderData.items.map(item => ({
                     order_id: order.id,
-                    product_id: item.id || null,
+                    product_id: item.product_id || null,
                     product_name: item.name,
                     price: parseFloat(item.price),
                     quantity: parseInt(item.quantity),
@@ -568,11 +650,11 @@
 
                 console.log('Reducing stock for ordered items...');
                 for (const item of orderData.items) {
-                    if (item.id) {
+                    if (item.product_id) {
                         const { data: currentProduct, error: fetchError } = await window.supabase
                             .from('products')
                             .select('stock')
-                            .eq('id', item.id)
+                            .eq('id', item.product_id)
                             .single();
                         
                         if (fetchError) {
@@ -582,7 +664,7 @@
                         
                         const newStock = Math.max(0, currentProduct.stock - item.quantity);
                         
-                        console.log(`Updating stock for product ${item.id}: ${currentProduct.stock} -> ${newStock}`);
+                        console.log(`Updating stock for product ${item.product_id}: ${currentProduct.stock} -> ${newStock}`);
                         
                         const { error: stockUpdateError } = await window.supabase
                             .from('products')
@@ -590,12 +672,12 @@
                                 stock: newStock,
                                 in_stock: newStock > 0
                             })
-                            .eq('id', item.id);
+                            .eq('id', item.product_id);
                         
                         if (stockUpdateError) {
                             console.error('Error updating stock:', stockUpdateError);
                         } else {
-                            console.log(`Stock updated successfully for product ${item.id}`);
+                            console.log(`Stock updated successfully for product ${item.product_id}`);
                         }
                     }
                 }
@@ -653,7 +735,17 @@
                 }
 
                 console.log('Clearing cart...');
-                await DataManager.clearCart();
+                // Clear cart from Supabase
+                const { error: clearError } = await window.supabase
+                    .from('cart')
+                    .delete()
+                    .eq('user_id', user.id);
+                
+                if (clearError) {
+                    console.error('Error clearing cart:', clearError);
+                } else {
+                    console.log('Cart cleared successfully');
+                }
                 
                 console.log('=== ORDER SAVE COMPLETE ===');
                 return order;
@@ -805,6 +897,8 @@
                     
                     if (addr.postcode) {
                         document.getElementById('pincode').value = addr.postcode;
+                        // Show warning that pincode might be approximate
+                        showToast('⚠️ Please verify the pincode is correct for your exact location', 'warning');
                     }
                     
                     closeMapSelector();
@@ -828,7 +922,7 @@
     </script>
     <script src="js/toast.js"></script>
     <script src="js/add-mobile-menu.js"></script>
-    <script src="js/mobile-menu.js"></script>
+    <script src="js/mobile-menu.js?v=2"></script>
     <script src="js/lazy-load.js"></script>
 </body>
 </html>

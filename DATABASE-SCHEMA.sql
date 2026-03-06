@@ -17,12 +17,13 @@ DROP TABLE IF EXISTS users CASCADE;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================
--- 1. USERS TABLE (For Authentication & Customer Data)
+-- 1. USERS TABLE (Linked to Nhost Auth)
 -- ============================================
+-- Note: Nhost handles authentication in auth.users table
+-- This table stores additional customer data linked to Nhost user ID
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,  -- This will be the Nhost auth user ID
     email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT 'customer',
     first_name TEXT NOT NULL,
     last_name TEXT,

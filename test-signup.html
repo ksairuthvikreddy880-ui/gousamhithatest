@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Signup</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 50px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .console-log {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #4a5568;
+        }
+        .error { color: #fc8181; }
+        .success { color: #68d391; }
+        .info { color: #63b3ed; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Test Signup Form</h1>
+        <p>Fill in the form and click "Create Account" to test signup</p>
+        
+        <form id="test-signup-form" onsubmit="testSignUp(event)">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="signup-name" required placeholder="Enter your full name" value="Test User">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="signup-email" required placeholder="Enter your email" value="test@example.com">
+            </div>
+            <div class="form-group">
+                <label>Mobile Number</label>
+                <input type="tel" id="signup-mobile" required placeholder="Enter mobile number" value="1234567890">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="signup-password" required placeholder="Create password" value="test123">
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="signup-confirm" required placeholder="Confirm password" value="test123">
+            </div>
+            <div class="auth-message" id="signup-message"></div>
+            <button type="submit" class="btn btn-primary auth-submit">Create Account</button>
+        </form>
+
+        <div class="console-log">
+            <strong>Console Log:</strong>
+            <div id="log-entries"></div>
+        </div>
+    </div>
+
+    <!-- Load Nhost -->
+    <script type="module">
+        import { NhostClient } from 'https://cdn.jsdelivr.net/npm/@nhost/nhost-js@2.2.3/+esm';
+        
+        // Initialize Nhost
+        const nhost = new NhostClient({
+            subdomain: "gousamhitha",
+            region: "eu-central-1"
+        });
+        
+        window.nhost = nhost;
+        
+        addLog('✅ Nhost client initialized', 'success');
+        addLog(`Subdomain: gousamhitha`, 'info');
+        addLog(`Region: eu-central-1`, 'info');
+    </script>
+
+    <script>
+        // Logging function
+        function addLog(message, type = 'info') {
+            const logEntries = document.getElementById('log-entries');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logEntries.appendChild(entry);
+            logEntries.scrollTop = logEntries.scrollHeight;
+            console.log(message);
+        }
+
+        // Show message in form
+        function showMessage(message, type) {
+            const messageEl = document.getElementById('signup-message');
+            messageEl.textContent = message;
+            messageEl.className = `auth-message ${type}`;
+            messageEl.style.display = 'block';
+            addLog(message, type);
+        }
+
+        // Test signup function
+        async function testSignUp(event) {
+            event.preventDefault();
+            
+            addLog('🚀 Starting signup process...', 'info');
+            
+            // Get form values
+            const fullName = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const mobile = document.getElementById('signup-mobile').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm').value;
+            
+            addLog(`Name: ${fullName}`, 'info');
+            addLog(`Email: ${email}`, 'info');
+            addLog(`Phone: ${mobile}`, 'info');
+            
+            // Validate
+            if (!fullName || !email || !password) {
+                showMessage('Please fill all required fields', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            try {
+                showMessage('Creating account...', 'success');
+                addLog('📝 Calling Nhost signup...', 'info');
+                
+                // Split name
+                const nameParts = fullName.split(' ');
+                const firstName = nameParts[0];
+                const lastName = nameParts.slice(1).join(' ');
+                
+                // Sign up with Nhost
+                const { session, error } = await window.nhost.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        displayName: fullName,
+                        metadata: {
+                            phone: mobile,
+                            firstName: firstName,
+                            lastName: lastName
+                        }
+                    }
+                });
+                
+                if (error) {
+                    addLog(`❌ Signup error: ${error.message}`, 'error');
+                    throw new Error(error.message || 'Signup failed');
+                }
+                
+                addLog('✅ Nhost signup successful!', 'success');
+                
+                // Get the newly created user
+                const user = window.nhost.auth.getUser();
+                addLog(`User ID: ${user?.id}`, 'info');
+                addLog(`User Email: ${user?.email}`, 'info');
+                
+                if (user) {
+                    addLog('📊 Creating user record in database...', 'info');
+                    
+                    // Create user record in custom users table
+                    try {
+                        const { data, error: insertError } = await window.nhost.graphql.request(`
+                            mutation InsertUser($id: uuid!, $email: String!, $firstName: String!, $lastName: String, $phone: String) {
+                                insert_users_one(object: {
+                                    id: $id,
+                                    email: $email,
+                                    first_name: $firstName,
+                                    last_name: $lastName,
+                                    phone: $phone,
+                                    role: "customer"
+                                }) {
+                                    id
+                                    email
+                                    first_name
+                                    last_name
+                                    phone
+                                    role
+                                }
+                            }
+                        `, {
+                            id: user.id,
+                            email: email,
+                            firstName: firstName,
+                            lastName: lastName || '',
+                            phone: mobile
+                        });
+                        
+                        if (insertError) {
+                            addLog(`⚠️ Database error: ${JSON.stringify(insertError)}`, 'error');
+                        } else {
+                            addLog('✅ User record created in database!', 'success');
+                            addLog(`Database record: ${JSON.stringify(data)}`, 'info');
+                        }
+                    } catch (dbError) {
+                        addLog(`❌ Database error: ${dbError.message}`, 'error');
+                    }
+                }
+                
+                showMessage('Account created successfully!', 'success');
+                addLog('🎉 Signup complete!', 'success');
+                
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+                showMessage(error.message || 'Signup failed', 'error');
+            }
+        }
+
+        // Make function global
+        window.testSignUp = testSignUp;
+        
+        addLog('✅ Test page loaded', 'success');
+    </script>
+</body>
+</html>

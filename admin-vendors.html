@@ -7,9 +7,8 @@
     <link rel="stylesheet" href="admin-styles.css">
     <link rel="stylesheet" href="css/responsive.css">
     
-    <!-- Supabase configuration - MUST load in this exact order -->
-    <script src="./config.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase Client -->
+    <script src="js/supabase-client.js?v=6"></script>
 </head>
 <body class="admin-page">
     <div class="admin-layout">
@@ -107,28 +106,25 @@
         </div>
     </div>
     
-    <!-- Scripts already loaded in head: js/config.js and Supabase CDN -->
-    <script src="supabase-auth.js"></script>
+    <!-- Scripts -->
     <script>
         let editingVendorId = null;
         let vendorChannel = null;
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            let retries = 0;
-            while (typeof window.supabase === 'undefined' && retries < 20) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                retries++;
-            }
-            
-            if (typeof window.supabase === 'undefined') {
-                console.error('Supabase failed to initialize!');
-                showToast('Database connection failed. Please refresh the page.', 'error');
-                return;
-            }
-            
+        // Wait for Supabase to be ready
+        window.addEventListener('supabaseReady', async () => {
+            console.log('✅ Supabase ready, loading vendors...');
             await loadVendors();
             setupRealtimeSubscription();
         });
+        
+        // Also try after a delay
+        setTimeout(async () => {
+            if (window.supabase) {
+                await loadVendors();
+                setupRealtimeSubscription();
+            }
+        }, 1000);
 
         function setupRealtimeSubscription() {
             vendorChannel = window.supabase

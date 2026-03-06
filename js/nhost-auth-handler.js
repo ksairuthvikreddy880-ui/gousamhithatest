@@ -37,6 +37,11 @@ async function handleSignUp(event) {
     try {
         showAuthMessage(messageEl, 'Creating account...', 'success');
         
+        // Split name into first and last
+        const nameParts = fullName.split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ');
+        
         // Sign up with Nhost
         const { session, error } = await auth.signUp({
             email: email,
@@ -45,14 +50,54 @@ async function handleSignUp(event) {
                 displayName: fullName,
                 metadata: {
                     phone: mobile,
-                    firstName: fullName.split(' ')[0],
-                    lastName: fullName.split(' ').slice(1).join(' ')
+                    firstName: firstName,
+                    lastName: lastName
                 }
             }
         });
         
         if (error) {
             throw new Error(error.message || 'Signup failed');
+        }
+        
+        // Get the newly created user
+        const user = nhost.auth.getUser();
+        
+        if (user) {
+            // Create user record in our custom users table
+            try {
+                const { error: insertError } = await nhost.graphql.request(`
+                    mutation InsertUser($id: uuid!, $email: String!, $firstName: String!, $lastName: String, $phone: String) {
+                        insert_users_one(object: {
+                            id: $id,
+                            email: $email,
+                            first_name: $firstName,
+                            last_name: $lastName,
+                            phone: $phone,
+                            role: "customer"
+                        }) {
+                            id
+                            email
+                            first_name
+                            last_name
+                            phone
+                            role
+                        }
+                    }
+                `, {
+                    id: user.id,
+                    email: email,
+                    firstName: firstName,
+                    lastName: lastName || '',
+                    phone: mobile
+                });
+                
+                if (insertError) {
+                    console.error('Error creating user record:', insertError);
+                }
+            } catch (dbError) {
+                console.error('Database error:', dbError);
+            }
         }
         
         showAuthMessage(messageEl, 'Account created! Logging you in...', 'success');
@@ -269,11 +314,50 @@ async function showProfileModal() {
             throw new Error('User not found');
         }
         
-        // Fill in profile data
-        document.getElementById('modal-name').textContent = user.displayName || user.email;
-        document.getElementById('modal-email').textContent = user.email;
-        document.getElementById('modal-phone').textContent = user.metadata?.phone || '-';
-        document.getElementById('modal-address').textContent = user.metadata?.address || '-';
+        // Fetch user data from our custom users table
+        const { data, error } = await nhost.graphql.request(`
+            query GetUser($id: uuid!) {
+                users_by_pk(id: $id) {
+                    id
+                    email
+                    first_name
+                    last_name
+                    phone
+                    address
+                    city
+                    state
+                    pincode
+                    role
+                }
+            }
+        `, {
+            id: user.id
+        });
+        
+        if (error) {
+            console.error('Error fetching user data:', error);
+            // Fallback to Nhost auth data
+            document.getElementById('modal-name').textContent = user.displayName || user.email;
+            document.getElementById('modal-email').textContent = user.email;
+            document.getElementById('modal-phone').textContent = user.metadata?.phone || '-';
+            document.getElementById('modal-address').textContent = user.metadata?.address || '-';
+        } else if (data && data.users_by_pk) {
+            const userData = data.users_by_pk;
+            document.getElementById('modal-name').textContent = `${userData.first_name} ${userData.last_name || ''}`.trim();
+            document.getElementById('modal-email').textContent = userData.email;
+            document.getElementById('modal-phone').textContent = userData.phone || '-';
+            
+            const fullAddress = [userData.address, userData.city, userData.state, userData.pincode]
+                .filter(Boolean)
+                .join(', ');
+            document.getElementById('modal-address').textContent = fullAddress || '-';
+        } else {
+            // User not in custom table yet, use Nhost auth data
+            document.getElementById('modal-name').textContent = user.displayName || user.email;
+            document.getElementById('modal-email').textContent = user.email;
+            document.getElementById('modal-phone').textContent = user.metadata?.phone || '-';
+            document.getElementById('modal-address').textContent = '-';
+        }
         
         loading.style.display = 'none';
         content.style.display = 'block';
@@ -348,5 +432,21 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     console.log('✅ Nhost auth handler initialized');
 });
+
+// ============================================
+// EXPORT FUNCTIONS GLOBALLY
+// ============================================
+// Make functions available to HTML onclick handlers
+window.handleSignUp = handleSignUp;
+window.handleSignIn = handleSignIn;
+window.openAuthModal = openAuthModal;
+window.closeAuthModal = closeAuthModal;
+window.showProfileModal = showProfileModal;
+window.closeProfileModal = closeProfileModal;
+window.editProfile = editProfile;
+window.logoutUser = logoutUser;
+window.showSignIn = showSignIn;
+window.showSignUp = showSignUp;
+window.toggleProfileDropdown = toggleProfileDropdown;
 
 console.log('✅ Nhost auth handler loaded');

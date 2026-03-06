@@ -7,9 +7,8 @@
     <link rel="stylesheet" href="admin-styles.css">
     <link rel="stylesheet" href="css/responsive.css">
     
-    <!-- Supabase configuration - MUST load in this exact order -->
-    <script src="./config.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase Client -->
+    <script src="js/supabase-client.js?v=6"></script>
 </head>
 <body class="admin-page">
     <div class="admin-layout">
@@ -58,10 +57,23 @@
     </div>
     
     <!-- Scripts already loaded in head: js/config.js and Supabase CDN -->
-    <script src="supabase-auth.js"></script>
+    <!-- Scripts -->
     <script src="admin-script.js"></script>
     <script src="js/toast.js"></script>
     <script>
+        // Wait for Supabase to be ready
+        window.addEventListener('supabaseReady', async () => {
+            console.log('✅ Supabase ready, loading deliveries...');
+            await loadDeliveriesTable();
+        });
+        
+        // Also try after a delay
+        setTimeout(async () => {
+            if (window.supabase) {
+                await loadDeliveriesTable();
+            }
+        }, 1000);
+        
         async function loadDeliveriesTable() {
             console.log('=== LOADING DELIVERIES TABLE ===');
             const tbody = document.getElementById('deliveries-table-body');

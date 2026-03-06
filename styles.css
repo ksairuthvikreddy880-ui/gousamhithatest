@@ -1143,6 +1143,21 @@ body {
     font-size: 0.9rem;
 }
 
+.auth-message {
+    padding: 12px;
+    margin: 15px 0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    min-height: 20px;
+    transition: all 0.3s ease;
+}
+
+.auth-message:empty {
+    display: none;
+}
+
 .auth-form-container.active {
     display: block;
 }
