@@ -228,10 +228,15 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing product display...');
     
     // Wait for Supabase to be ready
-    if (window.supabase) {
+    if (window.supabase && typeof window.supabase.from === 'function') {
+        console.log('Supabase already ready, loading products...');
         loadProducts();
     } else {
-        window.addEventListener('supabaseReady', loadProducts);
+        console.log('Waiting for Supabase to initialize...');
+        window.addEventListener('supabaseReady', function() {
+            console.log('Supabase ready event received, loading products...');
+            loadProducts();
+        });
     }
 });
 
