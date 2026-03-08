@@ -320,6 +320,39 @@
                 in_stock: parseInt(document.getElementById('edit-stock').value) > 0
             };
 
+            // Handle image upload if a new image is selected
+            const imageFile = document.getElementById('edit-image').files[0];
+            if (imageFile) {
+                try {
+                    // Upload to Supabase Storage
+                    const fileExt = imageFile.name.split('.').pop();
+                    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                    const filePath = `products/${fileName}`;
+
+                    const { data: uploadData, error: uploadError } = await window.supabase.storage
+                        .from('product-images')
+                        .upload(filePath, imageFile);
+
+                    if (uploadError) {
+                        console.error('Image upload error:', uploadError);
+                        // Continue without image update if upload fails
+                        if (typeof showToast === 'function') {
+                            showToast('Warning: Image upload failed, updating other fields...', 'warning');
+                        }
+                    } else {
+                        // Get public URL
+                        const { data: urlData } = window.supabase.storage
+                            .from('product-images')
+                            .getPublicUrl(filePath);
+                        
+                        productData.image_url = urlData.publicUrl;
+                    }
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                    // Continue without image update
+                }
+            }
+
             try {
                 const { error } = await window.supabase
                     .from('products')
