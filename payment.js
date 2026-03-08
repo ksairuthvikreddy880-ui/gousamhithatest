@@ -70,6 +70,16 @@ const paymentModalHTML = `
                         </div>
                     </div>
                 </label>
+                <label class="payment-method-option">
+                    <input type="radio" name="payment-method" value="Scan">
+                    <div class="payment-method-card">
+                        <div class="payment-method-icon">📷</div>
+                        <div class="payment-method-info">
+                            <div class="payment-method-name">Scan to Pay</div>
+                            <div class="payment-method-desc">QR Code Payment</div>
+                        </div>
+                    </div>
+                </label>
                 <!-- UPI Options (shown when UPI is selected) -->
                 <div id="upi-options" class="upi-options" style="display: none; margin-left: 1rem; margin-top: 0.5rem;">
                     <label class="upi-app-option">
@@ -674,6 +684,12 @@ async function processPayment() {
         return;
     }
     
+    // If Scan is selected, show QR code
+    if (selectedMethod === 'Scan') {
+        handleScanPayment();
+        return;
+    }
+    
     // Handle COD payment
     document.querySelector('.payment-methods-section').style.display = 'none';
     document.querySelector('.payment-sidebar-footer').style.display = 'none';
@@ -802,6 +818,166 @@ function processUpiPaymentCompletion() {
             await processCheckoutPayment('UPI');
         } else if (currentPaymentContext.type === 'donation') {
             processDonationPayment('UPI');
+        }
+        
+        setTimeout(() => {
+            closePaymentModal();
+            if (currentPaymentContext.type === 'checkout') {
+                window.location.href = 'orders.html';
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast('Thank you for your payment!');
+                }
+            }
+        }, 2000);
+    }, 2000);
+}
+
+function handleScanPayment() {
+    const orderData = currentPaymentContext.data;
+    const amount = orderData.finalTotal || orderData.total;
+    
+    // Hide payment methods and footer
+    document.querySelector('.payment-methods-section').style.display = 'none';
+    document.querySelector('.payment-sidebar-footer').style.display = 'none';
+    
+    // Create QR code display section
+    const qrSection = document.createElement('div');
+    qrSection.className = 'qr-payment-section';
+    qrSection.innerHTML = `
+        <div class="qr-payment-container">
+            <h3>Scan QR Code to Pay</h3>
+            <div class="qr-code-placeholder">
+                <img src="images/payment-qr-code.png" alt="Payment QR Code" class="qr-code-image">
+                <div class="qr-code-amount">Amount: ₹${amount.toFixed(2)}</div>
+            </div>
+            <div class="qr-instructions">
+                <p><strong>Instructions:</strong></p>
+                <ol>
+                    <li>Open your UPI app (Paytm, PhonePe, Google Pay, etc.)</li>
+                    <li>Tap on "Scan QR Code"</li>
+                    <li>Point your camera at the QR code above</li>
+                    <li>Enter the amount: <strong>₹${amount.toFixed(2)}</strong></li>
+                    <li>Complete the payment</li>
+                </ol>
+            </div>
+            <div class="qr-payment-buttons">
+                <button class="btn btn-secondary" onclick="cancelScanPayment()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmScanPayment()">I've Paid</button>
+            </div>
+        </div>
+    `;
+    
+    // Add styles for QR section
+    const qrStyles = document.createElement('style');
+    qrStyles.textContent = `
+        .qr-payment-section {
+            padding: 1.5rem;
+        }
+        .qr-payment-container {
+            text-align: center;
+        }
+        .qr-payment-container h3 {
+            color: #2e7d32;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+        }
+        .qr-code-placeholder {
+            margin: 1.5rem 0;
+        }
+        .qr-code-image {
+            max-width: 280px;
+            width: 100%;
+            height: auto;
+            margin: 0 auto;
+            display: block;
+            border: 2px solid #4a7c59;
+            border-radius: 12px;
+            padding: 10px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .qr-code-amount {
+            font-size: 1.2rem;
+            color: #2e7d32;
+            font-weight: 700;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #f0f7f0;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .qr-instructions {
+            text-align: left;
+            background: #f0f7f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .qr-instructions p {
+            margin: 0.5rem 0;
+        }
+        .qr-instructions ol {
+            margin: 0.5rem 0 0.5rem 1.5rem;
+        }
+        .qr-instructions li {
+            margin-bottom: 0.5rem;
+        }
+        .qr-payment-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .qr-payment-buttons .btn {
+            flex: 1;
+            padding: 0.75rem;
+        }
+    `;
+    
+    // Clear any existing QR section
+    const existingQrSection = document.querySelector('.qr-payment-section');
+    if (existingQrSection) {
+        existingQrSection.remove();
+    }
+    
+    // Add styles and QR section
+    document.head.appendChild(qrStyles);
+    document.querySelector('.payment-sidebar-body').appendChild(qrSection);
+}
+
+function cancelScanPayment() {
+    // Remove QR section
+    const qrSection = document.querySelector('.qr-payment-section');
+    if (qrSection) {
+        qrSection.remove();
+    }
+    
+    // Show payment methods and footer again
+    document.querySelector('.payment-methods-section').style.display = 'block';
+    document.querySelector('.payment-sidebar-footer').style.display = 'flex';
+}
+
+function confirmScanPayment() {
+    // Remove QR section
+    const qrSection = document.querySelector('.qr-payment-section');
+    if (qrSection) {
+        qrSection.remove();
+    }
+    
+    // Show payment loader
+    document.querySelector('.payment-methods-section').style.display = 'none';
+    document.querySelector('.payment-sidebar-footer').style.display = 'none';
+    showPaymentLoader();
+    
+    // Process payment after delay
+    setTimeout(async () => {
+        hidePaymentLoader();
+        showPaymentSuccess();
+        
+        if (currentPaymentContext.type === 'checkout') {
+            await processCheckoutPayment('Scan');
+        } else if (currentPaymentContext.type === 'donation') {
+            processDonationPayment('Scan');
         }
         
         setTimeout(() => {

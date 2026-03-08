@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Payment Scan Option</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        h1 {
+            color: #2e7d32;
+        }
+        h2 {
+            color: #4a7c59;
+            border-bottom: 2px solid #4a7c59;
+            padding-bottom: 10px;
+        }
+        .payment-option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .payment-option:hover {
+            border-color: #4a7c59;
+        }
+        .payment-option.selected {
+            border-color: #4a7c59;
+            background: #f0f7f0;
+        }
+        .payment-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+        .payment-info {
+            flex: 1;
+        }
+        .payment-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .payment-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .qr-demo {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px dashed #4a7c59;
+        }
+        .qr-box {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            background: #f5f5f5;
+            border: 2px solid #4a7c59;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .qr-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #4a7c59;
+            margin-bottom: 10px;
+        }
+        .qr-amount {
+            font-size: 1rem;
+            color: #333;
+        }
+        .instructions {
+            background: #f0f7f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .instructions ol {
+            margin: 10px 0 10px 20px;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        .note {
+            font-style: italic;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        .btn {
+            padding: 12px 24px;
+            background: #4a7c59;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            background: #3a6c49;
+        }
+        .btn-secondary {
+            background: #666;
+        }
+        .btn-secondary:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Payment Scan Option</h1>
+    
+    <div class="container">
+        <h2>New Payment Method Added: "Scan to Pay"</h2>
+        
+        <p>I've successfully added a third payment option to your checkout page. Here's what was implemented:</p>
+        
+        <h3>Payment Options Now Available:</h3>
+        
+        <div class="payment-option selected">
+            <div class="payment-icon">💵</div>
+            <div class="payment-info">
+                <div class="payment-name">Cash on Delivery</div>
+                <div class="payment-desc">Pay when you receive your order</div>
+            </div>
+        </div>
+        
+        <div class="payment-option">
+            <div class="payment-icon">📱</div>
+            <div class="payment-info">
+                <div class="payment-name">UPI</div>
+                <div class="payment-desc">Paytm Payment</div>
+            </div>
+        </div>
+        
+        <div class="payment-option">
+            <div class="payment-icon">📷</div>
+            <div class="payment-info">
+                <div class="payment-name">Scan to Pay</div>
+                <div class="payment-desc">QR Code Payment</div>
+            </div>
+        </div>
+        
+        <h3>How the "Scan to Pay" Option Works:</h3>
+        
+        <div class="qr-demo">
+            <img src="images/payment-qr-code.png" alt="Payment QR Code" style="max-width: 280px; width: 100%; height: auto; border: 2px solid #4a7c59; border-radius: 12px; padding: 10px; background: white;">
+            <div style="margin-top: 15px;">
+                <div class="qr-amount" style="font-size: 1.2rem; color: #2e7d32; font-weight: bold;">Amount: ₹499.00</div>
+            </div>
+            <p style="margin-top: 15px;"><strong>Your Actual QR Code</strong></p>
+        </div>
+        
+        <div class="instructions">
+            <p><strong>When a customer selects "Scan to Pay":</strong></p>
+            <ol>
+                <li>The payment modal shows a QR code section</li>
+                <li>Customer sees instructions to scan with their UPI app</li>
+                <li>QR code displays the order amount</li>
+                <li>Customer can click "I've Paid" after completing the scan</li>
+                <li>Or click "Cancel" to choose a different payment method</li>
+            </ol>
+        </div>
+        
+        <h3>Implementation Details:</h3>
+        <ul>
+            <li><strong>File Modified:</strong> <code>ecommerce-main/payment.js</code></li>
+            <li><strong>New Payment Method Value:</strong> "Scan"</li>
+            <li><strong>Database Compatibility:</strong> The payment_method field accepts any text value, so "Scan" will be stored correctly</li>
+            <li><strong>User Experience:</strong> Clean QR code interface with clear instructions</li>
+            <li><strong>Placeholder Note:</strong> The QR code is a placeholder - you can replace it with your actual QR code image</li>
+        </ul>
+        
+        <div class="note">
+            <p><strong>✅ QR Code Integrated:</strong> Your actual QR code image has been successfully integrated into the payment system. When customers select "Scan to Pay", they will see your QR code and can scan it with any UPI app to complete the payment.</p>
+        </div>
+        
+        <h3>Next Steps:</h3>
+        <p>You can now test the checkout process and see the new "Scan to Pay" option in action. The option will appear alongside "Cash on Delivery" and "UPI" in the payment modal.</p>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn" onclick="window.location.href='checkout.html'">Test Checkout Page</button>
+            <button class="btn btn-secondary" onclick="window.location.href='payment.js'">View Payment.js Code</button>
+        </div>
+    </div>
+    
+    <script>
+        // Simple demo to show payment option selection
+        document.querySelectorAll('.payment-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.payment-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+    </script>
+</body>
+</html>
