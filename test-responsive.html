@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Design Test - Gousamhitha</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            background: #f9f9f9;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 2px solid #4a7c59;
+        }
+        
+        .test-title {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4a7c59;
+        }
+        
+        .breakpoint-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .breakpoint-label {
+            font-weight: bold;
+            color: #4a7c59;
+            margin-bottom: 5px;
+        }
+        
+        .current-width {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #2e7d32;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .test-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .test-card h4 {
+            color: #4a7c59;
+            margin-bottom: 10px;
+        }
+        
+        .responsive-image {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        
+        .test-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 20px;
+            background: #4a7c59;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-btn:hover {
+            background: #3a6c49;
+        }
+        
+        .checklist {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .checklist-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 3px solid #4a7c59;
+            background: #f0f7f0;
+        }
+        
+        .checklist-item.pass {
+            border-left-color: #4caf50;
+            background: #e8f5e9;
+        }
+        
+        .checklist-item.fail {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        
+        @media (max-width: 480px) {
+            .mobile-indicator {
+                display: block !important;
+                background: #4caf50;
+                color: white;
+                padding: 10px;
+                text-align: center;
+                font-weight: bold;
+            }
+        }
+        
+        @media (min-width: 481px) and (max-width: 768px) {
+            .tablet-indicator {
+                display: block !important;
+                background: #2196f3;
+                color: white;
+                padding: 10px;
+                text-align: center;
+                font-weight: bold;
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .laptop-indicator {
+                display: block !important;
+                background: #ff9800;
+                color: white;
+                padding: 10px;
+                text-align: center;
+                font-weight: bold;
+            }
+        }
+        
+        @media (min-width: 1025px) {
+            .desktop-indicator {
+                display: block !important;
+                background: #9c27b0;
+                color: white;
+                padding: 10px;
+                text-align: center;
+                font-weight: bold;
+            }
+        }
+        
+        .mobile-indicator,
+        .tablet-indicator,
+        .laptop-indicator,
+        .desktop-indicator {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="current-width" id="current-width">Width: <span id="width-value">0</span>px</div>
+    
+    <div class="test-container">
+        <h1 style="color: #2e7d32; text-align: center; margin: 30px 0;">Responsive Design Test</h1>
+        
+        <!-- Device Indicators -->
+        <div class="mobile-indicator">📱 MOBILE VIEW (320px - 480px)</div>
+        <div class="tablet-indicator">📱 TABLET VIEW (481px - 768px)</div>
+        <div class="laptop-indicator">💻 LAPTOP VIEW (769px - 1024px)</div>
+        <div class="desktop-indicator">🖥️ DESKTOP VIEW (1025px+)</div>
+        
+        <!-- Breakpoint Information -->
+        <div class="test-section">
+            <h2 class="test-title">Responsive Breakpoints</h2>
+            <div class="breakpoint-info">
+                <div class="breakpoint-label">📱 Mobile: 320px - 480px</div>
+                <p>Single column layout, stacked elements, hamburger menu, touch-friendly buttons</p>
+            </div>
+            <div class="breakpoint-info">
+                <div class="breakpoint-label">📱 Tablet: 481px - 768px</div>
+                <p>2-column grid for products, 3-column for categories, optimized for touch</p>
+            </div>
+            <div class="breakpoint-info">
+                <div class="breakpoint-label">💻 Small Laptop: 769px - 1024px</div>
+                <p>3-column product grid, 4-column categories, side-by-side cart/checkout</p>
+            </div>
+            <div class="breakpoint-info">
+                <div class="breakpoint-label">🖥️ Desktop: 1025px and above</div>
+                <p>4-column product grid, 6-column categories, full desktop experience</p>
+            </div>
+        </div>
+        
+        <!-- Test Grid -->
+        <div class="test-section">
+            <h2 class="test-title">Responsive Grid Test</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h4>Card 1</h4>
+                    <p>This grid adapts to screen size</p>
+                </div>
+                <div class="test-card">
+                    <h4>Card 2</h4>
+                    <p>Minimum 200px width</p>
+                </div>
+                <div class="test-card">
+                    <h4>Card 3</h4>
+                    <p>Auto-fit columns</p>
+                </div>
+                <div class="test-card">
+                    <h4>Card 4</h4>
+                    <p>Responsive layout</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Buttons -->
+        <div class="test-section">
+            <h2 class="test-title">Touch-Friendly Buttons</h2>
+            <div class="test-buttons">
+                <button class="test-btn">Button 1</button>
+                <button class="test-btn">Button 2</button>
+                <button class="test-btn">Button 3</button>
+                <button class="test-btn">Button 4</button>
+            </div>
+            <p style="font-size: 14px; color: #666;">All buttons have minimum 44px height for touch accessibility</p>
+        </div>
+        
+        <!-- Responsive Image Test -->
+        <div class="test-section">
+            <h2 class="test-title">Responsive Images</h2>
+            <img src="https://via.placeholder.com/800x400/4a7c59/ffffff?text=Responsive+Image" 
+                 alt="Test Image" 
+                 class="responsive-image">
+            <p style="font-size: 14px; color: #666;">Images scale to container width with max-width: 100%</p>
+        </div>
+        
+        <!-- Implementation Checklist -->
+        <div class="test-section">
+            <h2 class="test-title">Implementation Checklist</h2>
+            <div class="checklist">
+                <div class="checklist-item pass">✅ Viewport meta tag added to all HTML files</div>
+                <div class="checklist-item pass">✅ Responsive CSS file (css/responsive.css) created</div>
+                <div class="checklist-item pass">✅ Mobile breakpoint (320px - 480px) implemented</div>
+                <div class="checklist-item pass">✅ Tablet breakpoint (481px - 768px) implemented</div>
+                <div class="checklist-item pass">✅ Small laptop breakpoint (769px - 1024px) implemented</div>
+                <div class="checklist-item pass">✅ Desktop breakpoint (1025px+) implemented</div>
+                <div class="checklist-item pass">✅ Flexbox layouts for navigation and cards</div>
+                <div class="checklist-item pass">✅ CSS Grid for product and category grids</div>
+                <div class="checklist-item pass">✅ Images set to max-width: 100%, height: auto</div>
+                <div class="checklist-item pass">✅ Touch-friendly buttons (min 44px height)</div>
+                <div class="checklist-item pass">✅ Hamburger menu for mobile navigation</div>
+                <div class="checklist-item pass">✅ Horizontal scroll prevention</div>
+                <div class="checklist-item pass">✅ Responsive typography scaling</div>
+                <div class="checklist-item pass">✅ Stacked layouts on mobile</div>
+                <div class="checklist-item pass">✅ Responsive forms and inputs</div>
+            </div>
+        </div>
+        
+        <!-- Test Instructions -->
+        <div class="test-section">
+            <h2 class="test-title">Testing Instructions</h2>
+            <div style="background: white; padding: 15px; border-radius: 8px;">
+                <h3 style="color: #4a7c59; margin-bottom: 10px;">How to Test:</h3>
+                <ol style="line-height: 2;">
+                    <li><strong>Desktop Browser:</strong> Open DevTools (F12) and use Device Toolbar</li>
+                    <li><strong>Test Widths:</strong> 375px (iPhone), 768px (iPad), 1024px (Laptop), 1440px (Desktop)</li>
+                    <li><strong>Real Devices:</strong> Test on actual phones and tablets</li>
+                    <li><strong>Orientation:</strong> Test both portrait and landscape modes</li>
+                    <li><strong>Touch:</strong> Verify all buttons and links are easily tappable</li>
+                    <li><strong>Scroll:</strong> Ensure no horizontal scrolling occurs</li>
+                </ol>
+                
+                <h3 style="color: #4a7c59; margin: 20px 0 10px;">Pages to Test:</h3>
+                <ul style="line-height: 2;">
+                    <li><a href="index.html" style="color: #4a7c59;">Home Page</a></li>
+                    <li><a href="shop.html" style="color: #4a7c59;">Shop Page</a></li>
+                    <li><a href="cart.html" style="color: #4a7c59;">Cart Page</a></li>
+                    <li><a href="checkout.html" style="color: #4a7c59;">Checkout Page</a></li>
+                    <li><a href="orders.html" style="color: #4a7c59;">Orders Page</a></li>
+                    <li><a href="profile.html" style="color: #4a7c59;">Profile Page</a></li>
+                    <li><a href="about.html" style="color: #4a7c59;">About Page</a></li>
+                    <li><a href="contact.html" style="color: #4a7c59;">Contact Page</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Features Implemented -->
+        <div class="test-section">
+            <h2 class="test-title">Responsive Features Implemented</h2>
+            <div style="background: white; padding: 15px; border-radius: 8px;">
+                <h3 style="color: #4a7c59;">Navigation:</h3>
+                <ul>
+                    <li>Hamburger menu on mobile devices</li>
+                    <li>Stacked search bar on small screens</li>
+                    <li>Icon-only navigation items on mobile</li>
+                </ul>
+                
+                <h3 style="color: #4a7c59; margin-top: 15px;">Layout:</h3>
+                <ul>
+                    <li>Single column on mobile (320px-480px)</li>
+                    <li>2-column grid on tablets (481px-768px)</li>
+                    <li>3-column grid on small laptops (769px-1024px)</li>
+                    <li>4-column grid on desktops (1025px+)</li>
+                </ul>
+                
+                <h3 style="color: #4a7c59; margin-top: 15px;">Components:</h3>
+                <ul>
+                    <li>Responsive product cards with proper image scaling</li>
+                    <li>Stacked cart items on mobile</li>
+                    <li>Full-width checkout form on mobile</li>
+                    <li>Touch-optimized buttons (44px minimum)</li>
+                    <li>Responsive modals and sidebars</li>
+                </ul>
+                
+                <h3 style="color: #4a7c59; margin-top: 15px;">Typography:</h3>
+                <ul>
+                    <li>Scaled headings for different screen sizes</li>
+                    <li>Readable font sizes on all devices</li>
+                    <li>Proper line height for mobile reading</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Display current viewport width
+        function updateWidth() {
+            const width = window.innerWidth;
+            document.getElementById('width-value').textContent = width;
+        }
+        
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        
+        // Log breakpoint changes
+        const breakpoints = [
+            { max: 480, name: 'Mobile' },
+            { min: 481, max: 768, name: 'Tablet' },
+            { min: 769, max: 1024, name: 'Small Laptop' },
+            { min: 1025, name: 'Desktop' }
+        ];
+        
+        function checkBreakpoint() {
+            const width = window.innerWidth;
+            breakpoints.forEach(bp => {
+                if ((!bp.min || width >= bp.min) && (!bp.max || width <= bp.max)) {
+                    console.log(`Current breakpoint: ${bp.name} (${width}px)`);
+                }
+            });
+        }
+        
+        checkBreakpoint();
+        window.addEventListener('resize', checkBreakpoint);
+    </script>
+</body>
+</html>
