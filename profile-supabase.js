@@ -53,7 +53,7 @@ async function loadProfile(user) {
             .from('users')
             .select('*')
             .eq('id', user.id)
-            .single();
+            .maybeSingle(); // Use maybeSingle to handle 0 rows gracefully
 
         if (userError) {
             console.error('Error fetching user data:', userError);

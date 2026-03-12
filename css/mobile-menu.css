@@ -3,7 +3,39 @@
    For screens 320px - 480px (Mobile Only)
    ======================================== */
 
-/* Hamburger Menu Button */
+/* CRITICAL: HAMBURGER MENU COMPLETELY DISABLED, PROFILE ALLOWED */
+.hamburger-menu,
+button.hamburger-menu,
+#hamburger-btn,
+[id="hamburger-btn"],
+[class*="hamburger-menu"],
+.hamburger-dropdown,
+#hamburger-dropdown,
+[id="hamburger-dropdown"],
+[class*="hamburger-dropdown"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    z-index: -1 !important;
+}
+
+/* Hide hamburger menu on ALL pages */
+.hamburger-menu {
+    display: none !important;
+}
+
+/* Hide hamburger dropdown as well */
+.hamburger-dropdown {
+    display: none !important;
+}
+
+/* Hamburger Menu Button - Hidden by default */
 .hamburger-menu {
     display: none;
     flex-direction: column;
@@ -242,7 +274,7 @@ body.menu-open .hamburger-menu {
     font-weight: bold;
 }
 
-/* Mobile-Only Display */
+/* Mobile-Only Display - Hamburger Hidden */
 @media (max-width: 480px) {
     /* Mobile Top Bar Container */
     .mobile-top-bar {
@@ -254,38 +286,34 @@ body.menu-open .hamburger-menu {
         gap: 0.5rem;
     }
     
-    /* Hamburger Menu - Smaller Size */
+    /* Hamburger Menu - COMPLETELY HIDDEN */
     .hamburger-menu {
-        display: flex;
-        width: 36px;
-        height: 36px;
-        padding: 6px;
-        flex-shrink: 0;
+        display: none !important;
     }
     
     .hamburger-menu span {
-        width: 20px;
-        height: 2px;
+        display: none !important;
     }
     
-    /* Mobile Logo - Smaller and Centered */
+    /* Mobile Logo - Full Width Centered */
     .logo-section-mobile {
         flex: 1;
         text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
+        width: 100%;
     }
     
     .logo-section-mobile .logo {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
         font-weight: bold;
         color: #4a7c59;
         line-height: 1;
     }
     
     .logo-section-mobile .logo-subtitle {
-        font-size: 0.6rem;
+        font-size: 0.7rem;
         color: #666;
         margin-top: 0.1rem;
     }
@@ -326,11 +354,6 @@ body.menu-open .hamburger-menu {
     
     /* Hide Desktop Logo on Mobile */
     .logo-section.desktop-only {
-        display: none !important;
-    }
-    
-    /* Hide Desktop Profile */
-    .desktop-profile {
         display: none !important;
     }
     

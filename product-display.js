@@ -170,7 +170,7 @@ async function addToCart(productId, productName, price, maxStock) {
             .select('*')
             .eq('user_id', user.id)
             .eq('product_id', productId)
-            .single();
+            .maybeSingle(); // Use maybeSingle to handle 0 rows gracefully
         
         if (existingItems) {
             // Update quantity

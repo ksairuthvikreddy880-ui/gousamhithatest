@@ -84,11 +84,15 @@ async function handleSignUp(event) {
         console.log('✅ User created in auth:', data.user.id);
         
         // Check if user already exists in users table
-        const { data: existingUser } = await window.supabase
+        const { data: existingUser, error: checkError } = await window.supabase
             .from('users')
             .select('id')
             .eq('email', email)
-            .single();
+            .maybeSingle(); // Use maybeSingle to handle 0 rows gracefully
+        
+        if (checkError) {
+            console.warn('⚠️ Error checking existing user:', checkError.message);
+        }
         
         if (existingUser) {
             console.log('ℹ️ User already exists in users table');

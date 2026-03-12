@@ -108,7 +108,7 @@ async function addToCart(product, quantity = 1) {
             .from('products')
             .select('stock, name')
             .eq('id', product.id)
-            .single();
+            .maybeSingle(); // Use maybeSingle to handle 0 rows gracefully
 
         if (productError || !currentProduct) {
             throw new Error('Product not found');
@@ -119,7 +119,7 @@ async function addToCart(product, quantity = 1) {
             .select('quantity')
             .eq('user_id', user.id)
             .eq('product_id', product.id)
-            .single();
+            .maybeSingle(); // Use maybeSingle to handle 0 rows gracefully
 
         if (cartError && cartError.code !== 'PGRST116') {
             throw cartError;
@@ -189,7 +189,7 @@ async function updateCartItem(productId, quantity) {
             .from('products')
             .select('stock, name')
             .eq('id', productId)
-            .single();
+            .maybeSingle(); // Use maybeSingle to handle 0 rows gracefully
 
         if (productError || !product) {
             throw new Error('Product not found');

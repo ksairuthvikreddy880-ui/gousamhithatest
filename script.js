@@ -55,7 +55,7 @@ async function updateQuantity(id, change) {
                 .from('products')
                 .select('stock, name')
                 .eq('id', id)
-                .single();
+                .maybeSingle(); // Use maybeSingle to handle 0 rows gracefully
             
             if (error) {
                 showToast('Error checking product availability', 'error');
