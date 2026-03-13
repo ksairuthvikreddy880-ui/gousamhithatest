@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Product Search Test - Gousamhitha</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/real-search-styles.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .search-demo {
+            margin: 2rem 0;
+        }
+        .demo-instructions {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🔍 Real Product Search Test</h1>
+            <p>Test the new real product search with autocomplete suggestions</p>
+        </div>
+        
+        <div class="demo-instructions">
+            <h3>How to Test:</h3>
+            <ul>
+                <li>Type in the search bar below (try "pan", "milk", "organic")</li>
+                <li>Watch for real-time autocomplete suggestions</li>
+                <li>Click on any suggestion to see it in action</li>
+                <li>Only real products from the database will appear</li>
+            </ul>
+        </div>
+        
+        <div class="search-demo">
+            <div class="search-section">
+                <input type="text" placeholder="Search for real products..." class="main-search-bar" style="width: 100%; padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                <button class="search-btn" style="margin-top: 1rem; padding: 12px 24px; background: #4a7c59; color: white; border: none; border-radius: 8px; cursor: pointer;">Search Products</button>
+            </div>
+        </div>
+        
+        <div class="test-results" id="test-results" style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; display: none;">
+            <h3>Search Results:</h3>
+            <div id="results-content"></div>
+        </div>
+        
+        <div class="test-info">
+            <h3>Features Tested:</h3>
+            <ul>
+                <li>✅ Real database product integration</li>
+                <li>✅ Real-time autocomplete suggestions</li>
+                <li>✅ Case-insensitive search</li>
+                <li>✅ Product image, name, category, price display</li>
+                <li>✅ No dummy/fake products</li>
+                <li>✅ Mobile-responsive design</li>
+                <li>✅ Smooth animations and interactions</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Supabase and Search Scripts -->
+    <script>
+        // Inline Supabase config for testing
+        window.SUPABASE_CONFIG = {
+            url: "https://blsgyybaevuytmgpljyk.supabase.co",
+            anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsc2d5eWJhZXZ1eXRtZ3BsanlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3NjcyMjYsImV4cCI6MjA4NzM0MzIyNn0.G4gvoW-_7DxQ1y28oZEHS7OIVpsyHTlZewV02Th_meU"
+        };
+    </script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/real-product-search.js"></script>
+    
+    <script>
+        // Test functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Real Product Search Test Page Loaded');
+            
+            // Override performSearch to show results on this page
+            if (window.realProductSearch) {
+                const originalPerformSearch = window.realProductSearch.performSearch.bind(window.realProductSearch);
+                
+                window.realProductSearch.performSearch = function(searchTerm) {
+                    console.log('🔍 Test search for:', searchTerm);
+                    
+                    const results = this.searchProducts(searchTerm);
+                    const resultsDiv = document.getElementById('test-results');
+                    const resultsContent = document.getElementById('results-content');
+                    
+                    resultsDiv.style.display = 'block';
+                    
+                    if (results.length === 0) {
+                        resultsContent.innerHTML = `<p>No products found for "${searchTerm}"</p>`;
+                    } else {
+                        resultsContent.innerHTML = `
+                            <p>Found ${results.length} product(s):</p>
+                            <ul>
+                                ${results.map(product => `
+                                    <li style="margin: 8px 0; padding: 8px; background: white; border-radius: 4px;">
+                                        <strong>${product.name}</strong> - ${product.category} - ₹${product.price}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        `;
+                    }
+                };
+            }
+        });
+    </script>
+</body>
+</html>
