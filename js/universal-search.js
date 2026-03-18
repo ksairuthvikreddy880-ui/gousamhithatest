@@ -114,6 +114,7 @@ class UniversalSearch {
         const searchSection = searchInput.closest('.search-section');
         if (searchSection) {
             searchSection.style.position = 'relative';
+            searchSection.style.zIndex = '1000';
             searchSection.appendChild(dropdown);
         }
         
@@ -129,6 +130,8 @@ class UniversalSearch {
         searchInput.addEventListener('focus', () => {
             if (searchInput.value.trim() && dropdown.innerHTML) {
                 dropdown.style.display = 'block';
+                // Ensure dropdown is visible
+                this.ensureDropdownVisibility(dropdown);
             }
         });
         
@@ -143,6 +146,24 @@ class UniversalSearch {
         dropdown.addEventListener('mousedown', (e) => {
             e.preventDefault();
         });
+    }
+    
+    ensureDropdownVisibility(dropdown) {
+        // Force the dropdown to appear above other elements
+        dropdown.style.zIndex = '10000';
+        dropdown.style.position = 'absolute';
+        
+        // Check if dropdown is being cut off and adjust if needed
+        setTimeout(() => {
+            const rect = dropdown.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            
+            if (rect.bottom > viewportHeight) {
+                // If dropdown goes below viewport, reduce max-height
+                const availableHeight = viewportHeight - rect.top - 20;
+                dropdown.style.maxHeight = `${Math.max(200, availableHeight)}px`;
+            }
+        }, 10);
     }
     
     handleInput(query, dropdown, searchInput) {
@@ -185,6 +206,7 @@ class UniversalSearch {
             </div>
         `;
         dropdown.style.display = 'block';
+        this.ensureDropdownVisibility(dropdown);
         
         // Search products
         const results = this.searchProducts(query);
@@ -240,6 +262,7 @@ class UniversalSearch {
                 </div>
             `;
             dropdown.style.display = 'block';
+            this.ensureDropdownVisibility(dropdown);
             return;
         }
         
@@ -272,6 +295,7 @@ class UniversalSearch {
         
         dropdown.innerHTML = resultsHTML + viewAllButton;
         dropdown.style.display = 'block';
+        this.ensureDropdownVisibility(dropdown);
     }
     
     highlightMatch(text, query) {
@@ -399,10 +423,16 @@ class UniversalSearch {
                 border-top: none;
                 border-radius: 0 0 12px 12px;
                 box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-                z-index: 1000;
+                z-index: 9999;
                 display: none;
                 max-height: 400px;
                 overflow-y: auto;
+            }
+            
+            /* Ensure search section has proper positioning context */
+            .search-section {
+                position: relative !important;
+                z-index: 1000;
             }
             
             .search-loading {
@@ -581,6 +611,8 @@ class UniversalSearch {
             @media (max-width: 768px) {
                 .universal-search-dropdown {
                     max-height: 300px;
+                    z-index: 10000;
+                    box-shadow: 0 12px 35px rgba(0,0,0,0.2);
                 }
                 
                 .search-result-item {
@@ -596,6 +628,30 @@ class UniversalSearch {
                     top: 10px;
                     right: 10px;
                     left: 10px;
+                }
+                
+                /* Ensure navbar doesn't interfere */
+                .navbar {
+                    z-index: 999 !important;
+                }
+                
+                /* Ensure dropdown is above navbar elements */
+                .nav-wrapper {
+                    z-index: 998 !important;
+                }
+            }
+            
+            /* Desktop specific adjustments */
+            @media (min-width: 769px) {
+                .universal-search-dropdown {
+                    z-index: 9999;
+                    min-width: 400px;
+                }
+                
+                /* Ensure proper stacking context */
+                .navbar .container {
+                    position: relative;
+                    z-index: 998;
                 }
             }
         `;

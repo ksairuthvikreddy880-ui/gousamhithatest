@@ -1,0 +1,100 @@
+/* Universal Search Dropdown Fix - Ensures dropdown appears above all content */
+
+/* Force search section to have proper stacking context */
+.search-section {
+    position: relative !important;
+    z-index: 1001 !important;
+}
+
+/* Ensure dropdown appears above everything */
+.universal-search-dropdown {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: white !important;
+    border: 1px solid #e0e0e0 !important;
+    border-top: none !important;
+    border-radius: 0 0 12px 12px !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25) !important;
+    z-index: 10001 !important;
+    display: none;
+    max-height: 400px !important;
+    overflow-y: auto !important;
+}
+
+/* Ensure navbar and other elements don't interfere */
+.navbar {
+    z-index: 999 !important;
+}
+
+.nav-wrapper {
+    z-index: 998 !important;
+}
+
+.navbar .container {
+    position: relative;
+    z-index: 998 !important;
+}
+
+/* Mobile specific fixes */
+@media (max-width: 768px) {
+    .universal-search-dropdown {
+        z-index: 10002 !important;
+        box-shadow: 0 12px 35px rgba(0,0,0,0.3) !important;
+        max-height: 300px !important;
+    }
+    
+    .search-section {
+        z-index: 1002 !important;
+    }
+    
+    /* Ensure mobile menu doesn't interfere */
+    .mobile-menu {
+        z-index: 1000 !important;
+    }
+    
+    .bottom-nav {
+        z-index: 999 !important;
+    }
+}
+
+/* Desktop specific fixes */
+@media (min-width: 769px) {
+    .universal-search-dropdown {
+        min-width: 400px !important;
+        z-index: 10001 !important;
+    }
+}
+
+/* Ensure dropdown content is properly styled */
+.universal-search-dropdown .search-result-item {
+    background: white !important;
+    position: relative !important;
+    z-index: 10003 !important;
+}
+
+.universal-search-dropdown .search-result-item:hover {
+    background: #f8f9fa !important;
+    z-index: 10004 !important;
+}
+
+/* Fix for overlapping issues */
+.universal-search-dropdown * {
+    position: relative !important;
+}
+
+/* Ensure proper layering */
+.page-header,
+.hero-section,
+.product-grid,
+.cart-container,
+.footer {
+    z-index: 1 !important;
+}
+
+/* Special fix for search input focus */
+.main-search-bar:focus + .universal-search-dropdown,
+.main-search-bar:focus ~ .universal-search-dropdown {
+    z-index: 10005 !important;
+}
