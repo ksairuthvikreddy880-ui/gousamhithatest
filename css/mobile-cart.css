@@ -11,8 +11,36 @@
         background: white !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-        padding: 0 !important;
+        padding: 0 0 100px 0 !important; /* Added bottom padding for checkout button */
         margin: 0 !important;
+    }
+    
+    /* Ensure cart summary has proper spacing above bottom nav */
+    .cart-summary {
+        margin-bottom: 80px !important; /* Space above bottom navigation */
+        padding: 30px 20px !important;
+        background: #f9f9f9 !important;
+        border-radius: 8px !important;
+    }
+    
+    .cart-summary .btn-primary {
+        width: 100% !important;
+        padding: 16px !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        touch-action: manipulation !important; /* Improves mobile touch response */
+        -webkit-tap-highlight-color: transparent !important; /* Removes tap highlight on iOS */
+    }
+    
+    .cart-summary .btn-primary:hover {
+        background: #3d6b4a !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    .cart-summary .btn-primary:active {
+        transform: translateY(0) !important;
+        background: #2e5a3a !important;
     }
     
     /* Clean Mobile Cart Item Layout */
@@ -385,10 +413,27 @@
     }
 }
 
-/* Hide desktop cart summary on mobile */
+/* Show cart summary on mobile with proper spacing */
 @media (max-width: 768px) {
     .cart-summary {
-        display: none !important;
+        display: block !important;
+        margin: 20px 16px 80px 16px !important; /* Bottom margin to clear navigation */
+        padding: 20px !important;
+        background: #f9f9f9 !important;
+        border-radius: 8px !important;
+    }
+    
+    .cart-summary h3 {
+        font-size: 20px !important;
+        margin-bottom: 16px !important;
+    }
+    
+    .cart-summary .btn-primary {
+        width: 100% !important;
+        padding: 14px !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
     }
     
     /* Reduce page header padding */
@@ -614,12 +659,6 @@
         font-size: 12px !important;
     }
     
-    /*
-    .mobile-cart-total-bar {
-        padding: 0.8rem !important;
-    }
-    */
-    
     .cart-total-price {
         font-size: 16px !important;
     }
@@ -627,6 +666,18 @@
     .checkout-btn-mobile {
         padding: 0.9rem !important;
         font-size: 15px !important;
+    }
+    
+    /* Extra bottom margin for smaller screens */
+    .cart-summary {
+        margin-bottom: 90px !important;
+    }
+}
+
+/* Ensure body has proper bottom padding on mobile */
+@media (max-width: 768px) {
+    body {
+        padding-bottom: 70px !important; /* Height of bottom navigation */
     }
 }
 

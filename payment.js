@@ -1064,7 +1064,7 @@ function handleScanPayment() {
         <div class="qr-payment-container">
             <h3>Scan QR Code to Pay</h3>
             <div class="qr-code-placeholder">
-                <img src="images/payment-qr-code.png" alt="Payment QR Code" class="qr-code-image">
+                <img src="images/Screenshot 2026-03-18 131030.png" alt="Payment QR Code" class="qr-code-image">
                 <div class="qr-code-amount">Amount: ₹${amount.toFixed(2)}</div>
             </div>
             <div class="qr-instructions">

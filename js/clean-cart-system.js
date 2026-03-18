@@ -33,15 +33,33 @@
             const cartItemsDiv = document.getElementById('cart-items');
             
             if (!window.supabase) {
-                cartItemsDiv.innerHTML = '<p style="text-align: center; padding: 40px;">Loading cart...</p>';
+                console.log('🛒 Supabase not ready, showing fallback cart');
+                cartItemsDiv.innerHTML = `
+                    <div class="empty-cart" style="text-align: center; padding: 40px;">
+                        <p style="font-size: 18px; margin-bottom: 20px;">Cart is loading...</p>
+                        <p style="color: #666; font-size: 14px;">If this takes too long, please refresh the page</p>
+                    </div>
+                `;
                 return;
             }
             
             try {
                 // Check if user is logged in
-                const { data: { user } } = await window.supabase.auth.getUser();
+                const { data: { user }, error: authError } = await window.supabase.auth.getUser();
+                
+                if (authError) {
+                    console.log('🛒 Auth error, showing login prompt:', authError);
+                    cartItemsDiv.innerHTML = `
+                        <div class="empty-cart" style="text-align: center; padding: 40px;">
+                            <p style="font-size: 18px; margin-bottom: 20px;">Please login to view your cart</p>
+                            <button onclick="openAuthModal()" class="btn btn-primary" style="padding: 12px 24px; background: #4a7c59; color: white; border: none; border-radius: 8px; cursor: pointer;">Login</button>
+                        </div>
+                    `;
+                    return;
+                }
                 
                 if (!user) {
+                    console.log('🛒 No user logged in, showing login prompt');
                     cartItemsDiv.innerHTML = `
                         <div class="empty-cart" style="text-align: center; padding: 40px;">
                             <p style="font-size: 18px; margin-bottom: 20px;">Please login to view your cart</p>
@@ -72,7 +90,13 @@
                 
                 if (error) {
                     console.error('🛒 Error loading cart:', error);
-                    cartItemsDiv.innerHTML = '<p style="text-align: center; padding: 40px;">Error loading cart. Please try again.</p>';
+                    cartItemsDiv.innerHTML = `
+                        <div class="empty-cart" style="text-align: center; padding: 40px;">
+                            <p style="font-size: 18px; margin-bottom: 20px; color: #d32f2f;">Error loading cart</p>
+                            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">There was an issue loading your cart items</p>
+                            <button onclick="window.location.reload()" class="btn btn-primary" style="padding: 12px 24px; background: #4a7c59; color: white; border: none; border-radius: 8px; cursor: pointer;">Retry</button>
+                        </div>
+                    `;
                     return;
                 }
                 
@@ -96,6 +120,11 @@
                 // Display cart items
                 const cartHTML = cartItems.map(item => {
                     const product = item.products;
+                    if (!product) {
+                        console.warn('🛒 Product not found for cart item:', item.id);
+                        return '';
+                    }
+                    
                     const itemTotal = product.price * item.quantity;
                     total += itemTotal;
                     totalItems += item.quantity;
@@ -119,12 +148,12 @@
                             </div>
                         </div>
                     `;
-                }).join('');
+                }).filter(html => html !== '').join('');
                 
                 const summaryHTML = `
                     <div class="cart-summary" style="padding: 30px; background: #f9f9f9; margin-top: 20px; border-radius: 8px;">
                         <h3 class="cart-total" style="margin: 0 0 20px 0; font-size: 24px;">Cart Total: ₹${total.toFixed(2)}</h3>
-                        <a href="checkout.html" class="btn btn-primary" style="display: inline-block; padding: 14px 28px; background: #4a7c59; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Proceed to Checkout</a>
+                        <button onclick="proceedToCheckout()" class="btn btn-primary checkout-btn" style="width: 100%; padding: 14px 28px; background: #4a7c59; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='#3d6b4a'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#4a7c59'; this.style.transform='translateY(0)'">Proceed to Checkout</button>
                     </div>
                 `;
                 
@@ -135,7 +164,13 @@
                 
             } catch (error) {
                 console.error('🛒 Error loading cart:', error);
-                cartItemsDiv.innerHTML = '<p style="text-align: center; padding: 40px;">Error loading cart. Please try again.</p>';
+                cartItemsDiv.innerHTML = `
+                    <div class="empty-cart" style="text-align: center; padding: 40px;">
+                        <p style="font-size: 18px; margin-bottom: 20px; color: #d32f2f;">Error loading cart</p>
+                        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Please try refreshing the page</p>
+                        <button onclick="window.location.reload()" class="btn btn-primary" style="padding: 12px 24px; background: #4a7c59; color: white; border: none; border-radius: 8px; cursor: pointer;">Refresh Page</button>
+                    </div>
+                `;
             }
         }
         
@@ -257,6 +292,7 @@
                     
                     setTimeout(() => {
                         cartItem.remove();
+                        console.log(`🛒 Item ${cartId} removed from UI`);
                         this.updateCartTotals();
                         this.checkEmptyCart();
                     }, 300);
@@ -273,13 +309,19 @@
         }
         
         updateCartItemUI(cartId, newQuantity) {
+            console.log(`🛒 Updating UI for cart item ${cartId} to quantity ${newQuantity}`);
+            
             const cartItem = document.querySelector(`[data-cart-id="${cartId}"]`);
-            if (!cartItem) return;
+            if (!cartItem) {
+                console.warn(`🛒 Cart item ${cartId} not found in UI`);
+                return;
+            }
             
             // Update quantity display
             const quantityDisplay = cartItem.querySelector('.quantity-display');
             if (quantityDisplay) {
                 quantityDisplay.textContent = newQuantity;
+                console.log(`🛒 Updated quantity display to ${newQuantity}`);
             }
             
             // Update button data attributes
@@ -296,19 +338,26 @@
                 const price = parseFloat(priceElement.textContent.replace('₹', ''));
                 const newTotal = price * newQuantity;
                 totalElement.textContent = `₹${newTotal.toFixed(2)}`;
+                console.log(`🛒 Updated item total to ₹${newTotal.toFixed(2)}`);
             }
             
-            // Update cart totals
-            this.updateCartTotals();
+            // Update cart totals - this is crucial!
+            setTimeout(() => {
+                this.updateCartTotals();
+            }, 100);
         }
         
         updateCartTotals() {
             let total = 0;
             let totalItems = 0;
             
+            console.log('🛒 Updating cart totals...');
+            
             // Calculate totals from UI
             const cartItems = document.querySelectorAll('.cart-item');
-            cartItems.forEach(item => {
+            console.log(`🛒 Found ${cartItems.length} cart items`);
+            
+            cartItems.forEach((item, index) => {
                 const quantityDisplay = item.querySelector('.quantity-display');
                 const itemTotalElement = item.querySelector('.item-total');
                 
@@ -316,15 +365,23 @@
                     const quantity = parseInt(quantityDisplay.textContent) || 0;
                     const itemTotal = parseFloat(itemTotalElement.textContent.replace('₹', '')) || 0;
                     
+                    console.log(`🛒 Item ${index + 1}: qty=${quantity}, total=₹${itemTotal}`);
+                    
                     totalItems += quantity;
                     total += itemTotal;
                 }
             });
             
+            console.log(`🛒 Calculated totals: ${totalItems} items, ₹${total.toFixed(2)}`);
+            
             // Update cart total display
             const cartTotalElement = document.querySelector('.cart-total');
             if (cartTotalElement) {
-                cartTotalElement.textContent = `Cart Total: ₹${total.toFixed(2)}`;
+                const newTotalText = `Cart Total: ₹${total.toFixed(2)}`;
+                cartTotalElement.textContent = newTotalText;
+                console.log(`🛒 Updated cart total display: ${newTotalText}`);
+            } else {
+                console.warn('🛒 Cart total element not found!');
             }
             
             // Update cart count
@@ -384,6 +441,32 @@
     
     // Expose for debugging
     window.CleanCartSystem = cleanCartSystem;
+    
+    // Global checkout function
+    window.proceedToCheckout = async function() {
+        console.log('🛒 Proceeding to checkout...');
+        
+        try {
+            // Simple checkout without complex authentication checks
+            const cartItems = document.querySelectorAll('.cart-item');
+            console.log('🛒 Found cart items:', cartItems.length);
+            
+            if (cartItems.length === 0) {
+                alert('Your cart is empty. Please add items before checkout.');
+                return;
+            }
+            
+            console.log('🛒 Navigating to checkout page...');
+            
+            // Direct navigation to checkout page
+            window.location.href = 'checkout.html';
+            
+        } catch (error) {
+            console.error('🛒 Error during checkout:', error);
+            // Fallback: direct navigation
+            window.location.href = 'checkout.html';
+        }
+    };
     
     console.log('✅ Clean Cart System loaded');
     

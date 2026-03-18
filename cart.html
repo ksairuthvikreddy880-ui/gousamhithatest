@@ -290,9 +290,47 @@
     <!-- Cart Error Fix -->
     <script src="js/cart-count-updater.js"></script>
     
-    <!-- Clean Cart System - Simple and reliable -->
+    <!-- Clean Cart System - Simple and reliable (MAIN CART SYSTEM) -->
     <script src="js/clean-cart-system.js"></script>
     
-    <script src="js/mobile-cart-handler.js"></script>
+    <!-- Cart Total Fix - Ensures totals update correctly -->
+    <script src="js/cart-total-fix.js"></script>
+    
+    <!-- Disable conflicting cart handlers -->
+    <!-- <script src="js/mobile-cart-handler.js"></script> -->
+    
+    <!-- Checkout functionality -->
+    <script>
+        // Simple fallback checkout function
+        function proceedToCheckout() {
+            console.log('🛒 Checkout button clicked');
+            
+            try {
+                // Check if cart has items
+                const cartItems = document.querySelectorAll('.cart-item');
+                console.log('🛒 Found cart items:', cartItems.length);
+                
+                if (cartItems.length === 0) {
+                    alert('Your cart is empty. Please add items before checkout.');
+                    return;
+                }
+                
+                console.log('🛒 Navigating to checkout...');
+                
+                // Direct navigation to checkout
+                window.location.href = 'checkout.html';
+                
+            } catch (error) {
+                console.error('🛒 Checkout error:', error);
+                // Fallback: direct navigation
+                window.location.href = 'checkout.html';
+            }
+        }
+        
+        // Make sure function is globally available
+        window.proceedToCheckout = proceedToCheckout;
+        
+        console.log('✅ Checkout functionality loaded');
+    </script>
 </body>
 </html>
